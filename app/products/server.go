@@ -20,12 +20,16 @@ type productsHandler struct{}
 func (sh productsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	pathSegments := strings.Split(r.URL.Path, "/")
 	switch len(pathSegments) {
-	case 2: // /product
+	case 2: // /products
 		sh.getAll(w, r)
 	
 	case 3: // /products/{:sku}
 		log.Println("demo for central log service: we don't have a way to go to an indivisual product")
-
+		/*
+		sku := SKU(pathSegments[2])
+		sh.getOne(w, r, sku)
+		*/
+		sh.getAll(w, r)
 	default:
 		w.WriteHeader(http.StatusNotFound)
 	}

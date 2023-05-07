@@ -16,12 +16,13 @@ func RegisterHandlers() {
 
 	h := new(productsHandler)
 	http.Handle("/products", h)
-	//http.Handle("/product/", h)
+	http.Handle("/products/", h)
 }
 
 type productsHandler struct{}
 
 func (sh productsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Println("rundooportal productsHandler Request received", r.URL.Path)
 	pathSegments := strings.Split(r.URL.Path, "/")
 	switch len(pathSegments) {
 	case 2: // /products
@@ -85,12 +86,14 @@ func (productsHandler) renderProduct(w http.ResponseWriter, r *http.Request, sku
 
 	res, err := http.Get(fmt.Sprintf("%v/products/%v", serviceURL, string(sku)))
 	if err != nil {
+		log.Println("Error request product : ", string(sku))
 		return
 	}
 
 	var s products.Product
 	err = json.NewDecoder(res.Body).Decode(&s)
 	if err != nil {
+		log.Println("Error decodes product : ", string(sku))
 		return
 	}
 
@@ -127,11 +130,11 @@ func (productsHandler) renderGrades(w http.ResponseWriter, r *http.Request, id i
 	}
 	res, err := http.Post(fmt.Sprintf("%v/products/%v", serviceURL, name), "application/json", bytes.NewBuffer(data))
 	if err != nil {
-		log.Println("Failed to save grade to Grading Service", err)
+		log.Println("Failed to save product to Products Service", err)
 		return
 	}
 	if res.StatusCode != http.StatusCreated {
-		log.Println("Failed to save grade to Grading Service. Status: ", res.StatusCode)
+		log.Println("Failed to save product to Product Service. Status: ", res.StatusCode)
 		return
 	}
 }

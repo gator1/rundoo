@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package rundoo.v1;
+
+option go_package = "./";
+
+service ProductService {
+  rpc GetProducts (GetProductsRequest) returns (GetProductsResponse) {}
+  rpc SearchProducts (SearchProductsRequest) returns (SearchProductsResponse) {}
+  rpc AddProduct (AddProductRequest) returns (AddProductResponse) {}
+}
+
+message User {
+  int64 id = 1;
+  string name = 2;
+}
+
+message GetUsersRequest {
+  repeated int64 ids = 1; 
+}
+  
+message GetUsersResponse {
+  repeated User users = 1; 
+}

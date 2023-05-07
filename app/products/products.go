@@ -30,9 +30,10 @@ const (
 )
 
 type Product struct {
-	Name     string
-	Category CategoryType
 	Sku      SKU
+	Category CategoryType
+	Name     string
+	
 }
 
 type Products []Product
