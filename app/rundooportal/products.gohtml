@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students</title>
+</head>
+<body>
+    <h1>Rundoo Products Book</h1>
+    {{if len .}}
+        <table> 
+            <tr>
+                <th>SKU</th>
+                <th>Category</th>
+                <th>Name</th>
+            </tr>
+            {{range .}}
+                <tr>
+                    <td>
+                        <a href="/products/{{.Sku}}">{{.Sku}}</a>
+                    </td>
+                    <td>
+                        {{.Category}}
+                    </td>
+                    <td>
+                        {{.Name}}
+                    </td>
+                </tr>
+            {{end}}
+
+        </table>
+    {{else}}
+        <em>No products found</em>
+    {{end}}
+
+</body>
+</html>
