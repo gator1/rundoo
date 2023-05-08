@@ -34,5 +34,5 @@ func main() {
 	}
 
 	<-ctx.Done()
-	fmt.Println("Shutting down grading service")
+	fmt.Println("Shutting down product service")
 }

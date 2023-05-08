@@ -24,12 +24,15 @@ func (sh productsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		sh.getAll(w, r)
 	
 	case 3: // /products/{:sku}
-		log.Println("demo for central log service: we don't have a way to go to an indivisual product")
-		/*
-		sku := SKU(pathSegments[2])
-		sh.getOne(w, r, sku)
-		*/
-		sh.getAll(w, r)
+		sku := pathSegments[2]
+		if sku == "AddProduct" {
+			sh.addProduct(w, r)
+		} else {
+			log.Println("demo for central log service: we don't have a way to go to an indivisual product")
+			sh.getOne(w, r, SKU(sku))
+		}
+	
+		
 	default:
 		w.WriteHeader(http.StatusNotFound)
 	}
@@ -82,30 +85,21 @@ func (productsHandler) toJSON(obj interface{}) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-/*
 
-func (sh productsHandler) addGrade(w http.ResponseWriter, r *http.Request, sku SKU) {
+
+func (sh productsHandler) addProduct(w http.ResponseWriter, r *http.Request) {
 	productsMutex.Lock()
 	defer productsMutex.Unlock()
 
-	student, err := products.GetBySKU(sku)
-	if err != nil {
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			log.Println(err)
-			return
-		}
-	}
-
 	var g Product
 	dec := json.NewDecoder(r.Body)
-	err = dec.Decode(&g)
+	err := dec.Decode(&g)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Println(err)
 		return
 	}
-	student.Grades = append(student.Grades, g)
+	products = append(products, g)
 
 	w.WriteHeader(http.StatusCreated)
 	data, err := sh.toJSON(g)
@@ -115,4 +109,4 @@ func (sh productsHandler) addGrade(w http.ResponseWriter, r *http.Request, sku S
 	w.Header().Add("content-type", "application/json")
 	w.Write(data)
 }
-*/
+

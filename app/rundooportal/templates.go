@@ -20,7 +20,8 @@ func ImportTemplates() error {
 
 	rootTemplate, err = template.ParseFiles(
 		"rundooportal/products.gohtml",
-		"rundooportal/addproduct.gohtml")
+		"rundooportal/addproduct.gohtml",
+		"rundooportal/productdetails.gohtml")
 
 	if err != nil {
 		return err

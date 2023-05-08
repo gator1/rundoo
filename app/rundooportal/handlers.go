@@ -29,8 +29,18 @@ func (sh productsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		sh.renderProducts(w, r)
 	case 3: // /products/{:sku}
 		sku := products.SKU(pathSegments[2])
+		if sku == "AddProduct" {
+			sh.renderAddProduct(w, r)
+
+		} else if sku == "AddedProduct" {
+			sh.renderAddedProduct(w, r)
+
+		} else if sku == "SearchProduct" {
+			
+		} else {
+			sh.renderProduct(w, r, sku)
+		}
 		
-		sh.renderProduct(w, r, sku)
 
 	default:
 		w.WriteHeader(http.StatusNotFound)
@@ -81,12 +91,14 @@ func (productsHandler) renderProduct(w http.ResponseWriter, r *http.Request, sku
 
 	serviceURL, err := registry.GetProvider(registry.ProductService)
 	if err != nil {
+		log.Println("Error redner product GetProvider : ", string(sku))
+		
 		return
 	}
 
 	res, err := http.Get(fmt.Sprintf("%v/products/%v", serviceURL, string(sku)))
 	if err != nil {
-		log.Println("Error request product : ", string(sku))
+		log.Println("Error render product http.Get: ", string(sku))
 		return
 	}
 
@@ -97,8 +109,38 @@ func (productsHandler) renderProduct(w http.ResponseWriter, r *http.Request, sku
 		return
 	}
 
-	rootTemplate.Lookup("addproduct.gohtml").Execute(w, s)
+	rootTemplate.Lookup("productdetails.gohtml").Execute(w, s)
 }
+
+
+func (productsHandler) renderAddProduct(w http.ResponseWriter, r *http.Request) {
+
+	rootTemplate.Lookup("addproduct.gohtml").Execute(w, nil)
+	/*
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}*/
+	defer func() {
+		w.Header().Add("location", "/products")
+		w.WriteHeader(http.StatusTemporaryRedirect)
+	}()
+}
+
+func (productsHandler) renderAddedProduct(w http.ResponseWriter, r *http.Request) {
+
+	//rootTemplate.Lookup("addproduct.gohtml").Execute(w, nil)
+	
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	defer func() {
+		w.Header().Add("location", "/products")
+		w.WriteHeader(http.StatusTemporaryRedirect)
+	}()
+}
+
 
 func (productsHandler) renderGrades(w http.ResponseWriter, r *http.Request, id int) {
 
