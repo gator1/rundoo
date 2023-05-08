@@ -40,7 +40,7 @@ type Products []Product
 
 var (
     products Products
-    categories = map[CategoryType]bool{
+    Categories = map[CategoryType]bool{
         CategoryWine: true,
         CategoryBook: true,
         CategoryTool: true,

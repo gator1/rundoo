@@ -33,7 +33,7 @@ func (sh productsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			sh.renderAddProduct(w, r)
 
 		} else if sku == "AddedProduct" {
-			sh.renderAddedProduct(w, r)
+			sh.postAddProduct(w, r)
 
 		} else if sku == "SearchProduct" {
 			
@@ -116,20 +116,15 @@ func (productsHandler) renderProduct(w http.ResponseWriter, r *http.Request, sku
 func (productsHandler) renderAddProduct(w http.ResponseWriter, r *http.Request) {
 
 	rootTemplate.Lookup("addproduct.gohtml").Execute(w, nil)
-	/*
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}*/
+	
 	defer func() {
 		w.Header().Add("location", "/products")
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	}()
 }
 
-func (productsHandler) renderAddedProduct(w http.ResponseWriter, r *http.Request) {
+func (productsHandler) postAddProduct(w http.ResponseWriter, r *http.Request) {
 
-	//rootTemplate.Lookup("addproduct.gohtml").Execute(w, nil)
 	
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -139,40 +134,37 @@ func (productsHandler) renderAddedProduct(w http.ResponseWriter, r *http.Request
 		w.Header().Add("location", "/products")
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	}()
-}
-
-
-func (productsHandler) renderGrades(w http.ResponseWriter, r *http.Request, id int) {
-
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-	defer func() {
-		w.Header().Add("location", fmt.Sprintf("/products/%v", id))
-		w.WriteHeader(http.StatusTemporaryRedirect)
-	}()
-	name := r.FormValue("Name")
-	categoryType := r.FormValue("Category")
-	sku := r.FormValue("Sku")
-	g := products.Product{
-		Name: name,
-		Category:  products.CategoryType(categoryType),
-		Sku: products.SKU(sku),
-	}
-	data, err := json.Marshal(g)
-	if err != nil {
-		log.Println("Failed to convert product to JSON: ", g, err)
-	}
 
 	serviceURL, err := registry.GetProvider(registry.ProductService)
 	if err != nil {
-		log.Println("Failed to retrieve instance of Product Service", err)
+		log.Println("Error redner product GetProvider : ", err)
+		
 		return
 	}
-	res, err := http.Post(fmt.Sprintf("%v/products/%v", serviceURL, name), "application/json", bytes.NewBuffer(data))
+
+	name := r.FormValue("Name")
+	categoryType := products.CategoryType(r.FormValue("Category"))
+	sku, err := products.NewSKU(r.FormValue("Sku"))
 	if err != nil {
-		log.Println("Failed to save product to Products Service", err)
+		log.Println("Wrong format of SKU: ", err)
+		return
+	}
+	
+	p := products.Product{
+		Name: name,
+		Category: categoryType,
+		Sku: sku,
+	}
+	
+	data, err := json.Marshal(p)
+	if err != nil {
+		log.Println("Failed to convert product to JSON: ", p, err)
+	}
+
+	
+	res, err := http.Post(fmt.Sprintf("%v/products/AddProduct", serviceURL), "application/json", bytes.NewBuffer(data))
+	if err != nil {
+		log.Println("Failed to save product to Product Service", err)
 		return
 	}
 	if res.StatusCode != http.StatusCreated {
