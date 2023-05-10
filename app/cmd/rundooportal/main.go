@@ -3,11 +3,12 @@ package main
 import (
 	"app/log"
 	"app/registry"
-	"app/service"
 	"app/rundooportal"
+	"app/service"
 	"context"
 	"fmt"
 	stlog "log"
+	"net/http"
 )
 
 func main() {
@@ -20,7 +21,11 @@ func main() {
 	serviceAddress := fmt.Sprintf("http://%v:%v", host, port)
 
 	var r registry.ServiceConfig
+	handler := &rundooportal.RundooHandler{}
+
 	r.Name = registry.RundooPortal
+	r.Host = host
+	r.Port = port
 	r.URL = serviceAddress
 	r.HeartbeatURL = r.URL + "/heartbeat"
 	r.RequiredServices = []registry.ServiceName{
@@ -28,12 +33,11 @@ func main() {
 		registry.ProductService,
 	}
 	r.UpdateURL = r.URL + "/services"
-
-	ctx, err := service.Start(context.Background(),
-		host,
-		port,
-		r,
-		rundooportal.RegisterHandlers)
+	r.HttpHandler = handler
+	r.Mux = http.NewServeMux()
+	r.Mux.Handle("/products", handler)
+	r.Mux.Handle("/products/", handler)
+	ctx, err := service.Start(context.Background(), r)
 	if err != nil {
 		stlog.Fatal(err)
 	}

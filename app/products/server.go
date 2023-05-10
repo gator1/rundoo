@@ -9,15 +9,15 @@ import (
 	"strings"
 )
 
-func RegisterHandlers() {
-	handler := new(productsHandler)
+func HttpHandler() {
+	handler := new(ProductsHandler)
 	http.Handle("/products", handler)
 	http.Handle("/products/", handler)
 }
 
-type productsHandler struct{}
+type ProductsHandler struct{}
 
-func (sh productsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (sh ProductsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	pathSegments := strings.Split(r.URL.Path, "/")
 	switch len(pathSegments) {
 	case 2: // /products
@@ -38,7 +38,7 @@ func (sh productsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (sh productsHandler) getAll(w http.ResponseWriter, r *http.Request) {
+func (sh ProductsHandler) getAll(w http.ResponseWriter, r *http.Request) {
 	productsMutex.Lock()
 	defer productsMutex.Unlock()
 
@@ -52,7 +52,7 @@ func (sh productsHandler) getAll(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func (sh productsHandler) getOne(w http.ResponseWriter, r *http.Request, sku SKU) {
+func (sh ProductsHandler) getOne(w http.ResponseWriter, r *http.Request, sku SKU) {
 	productsMutex.Lock()
 	defer productsMutex.Unlock()
 
@@ -75,7 +75,7 @@ func (sh productsHandler) getOne(w http.ResponseWriter, r *http.Request, sku SKU
 	w.Write(data)
 }
 
-func (productsHandler) toJSON(obj interface{}) ([]byte, error) {
+func (ProductsHandler) toJSON(obj interface{}) ([]byte, error) {
 	var b bytes.Buffer
 	enc := json.NewEncoder(&b)
 	err := enc.Encode(obj)
@@ -87,7 +87,7 @@ func (productsHandler) toJSON(obj interface{}) ([]byte, error) {
 
 
 
-func (sh productsHandler) addProduct(w http.ResponseWriter, r *http.Request) {
+func (sh ProductsHandler) addProduct(w http.ResponseWriter, r *http.Request) {
 	productsMutex.Lock()
 	defer productsMutex.Unlock()
 

@@ -16,6 +16,7 @@ type ServiceConfig struct {
 	UpdateURL        string
 	Host             string
 	Port             string
+	Mux              *http.ServeMux
 	HttpHandler      http.Handler `json:"-"`
 	GrpcServer       *grpc.Server `json:"-"`
 	RequiredServices []ServiceName

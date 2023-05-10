@@ -11,17 +11,17 @@ import (
 	"strings"
 )
 
-func RegisterHandlers() {
+func HttpHandler() {
 	http.Handle("/", http.RedirectHandler("/products", http.StatusPermanentRedirect))
 
-	h := new(productsHandler)
+	h := new(RundooHandler)
 	http.Handle("/products", h)
 	http.Handle("/products/", h)
 }
 
-type productsHandler struct{}
+type RundooHandler struct{}
 
-func (sh productsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (sh RundooHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Println("rundooportal productsHandler Request received", r.URL.Path)
 	pathSegments := strings.Split(r.URL.Path, "/")
 	switch len(pathSegments) {
@@ -36,18 +36,17 @@ func (sh productsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			sh.postAddProduct(w, r)
 
 		} else if sku == "SearchProduct" {
-			
+
 		} else {
 			sh.renderProduct(w, r, sku)
 		}
-		
 
 	default:
 		w.WriteHeader(http.StatusNotFound)
 	}
 }
 
-func (productsHandler) renderProducts(w http.ResponseWriter, r *http.Request) {
+func (RundooHandler) renderProducts(w http.ResponseWriter, r *http.Request) {
 	var err error
 	defer func() {
 		if err != nil {
@@ -78,7 +77,7 @@ func (productsHandler) renderProducts(w http.ResponseWriter, r *http.Request) {
 	rootTemplate.Lookup("products.gohtml").Execute(w, s)
 }
 
-func (productsHandler) renderProduct(w http.ResponseWriter, r *http.Request, sku products.SKU) {
+func (RundooHandler) renderProduct(w http.ResponseWriter, r *http.Request, sku products.SKU) {
 
 	var err error
 	defer func() {
@@ -112,20 +111,18 @@ func (productsHandler) renderProduct(w http.ResponseWriter, r *http.Request, sku
 	rootTemplate.Lookup("productdetails.gohtml").Execute(w, s)
 }
 
-
-func (productsHandler) renderAddProduct(w http.ResponseWriter, r *http.Request) {
+func (RundooHandler) renderAddProduct(w http.ResponseWriter, r *http.Request) {
 
 	rootTemplate.Lookup("addproduct.gohtml").Execute(w, nil)
-	
+
 	defer func() {
 		w.Header().Add("location", "/products")
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	}()
 }
 
-func (productsHandler) postAddProduct(w http.ResponseWriter, r *http.Request) {
+func (RundooHandler) postAddProduct(w http.ResponseWriter, r *http.Request) {
 
-	
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return

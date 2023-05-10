@@ -87,6 +87,37 @@ func RegisterService(r ServiceConfig) error {
 	return nil
 }
 
+func RegisterServiceMux(r ServiceConfig) error {
+
+	heartbeatURL, err := url.Parse(r.HeartbeatURL)
+	if err != nil {
+		return err
+	}
+	r.Mux.HandleFunc(heartbeatURL.Path, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	serviceUpdateURL, err := url.Parse(r.UpdateURL)
+	if err != nil {
+		return err
+	}
+	r.Mux.Handle(serviceUpdateURL.Path, &serviceUpdateHandler{})
+
+	buf := new(bytes.Buffer)
+	enc := json.NewEncoder(buf)
+	err = enc.Encode(r)
+	if err != nil {
+		return err
+	}
+	res, err := http.Post(ServicesURL, "application/json", buf)
+	if err != nil {
+		return err
+	}
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("Failed to register service. Registry service responded with code %v", res.StatusCode)
+	}
+	return nil
+}
+
 func ShutdownService(serviceURL string) error {
 	req, err := http.NewRequest(http.MethodDelete,
 		ServicesURL,

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"app/products"
 	"app/log"
+	"app/products"
 	"app/registry"
 	"app/service"
 	"context"
@@ -15,17 +15,19 @@ func main() {
 	serviceAddress := fmt.Sprintf("http://%v:%v", host, port)
 
 	var r registry.ServiceConfig
+
+	handler := &products.ProductsHandler{}
 	r.Name = registry.ProductService
+	r.Host = host
+	r.Port = port
 	r.URL = serviceAddress
 	r.HeartbeatURL = r.URL + "/heartbeat"
-	r.RequiredServices = make([]registry.ServiceName, 0)
+	r.RequiredServices = []registry.ServiceName{
+		registry.LogService,
+	}
 	r.UpdateURL = r.URL + "/services"
-
-	ctx, err := service.Start(context.Background(),
-		host,
-		port,
-		r,
-		products.RegisterHandlers)
+	r.HttpHandler = handler
+	ctx, err := service.Start(context.Background(), r)
 	if err != nil {
 		stlog.Fatal(err)
 	}

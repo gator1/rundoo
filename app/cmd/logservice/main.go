@@ -7,6 +7,8 @@ import (
 	"context"
 	"fmt"
 	stlog "log"
+	"net/http"
+
 )
 
 func main() {
@@ -16,17 +18,17 @@ func main() {
 	serviceAddress := fmt.Sprintf("http://%v:%v", host, port)
 
 	var r registry.ServiceConfig
+	
 	r.Name = registry.LogService
+	r.Host = host
+	r.Port = port
 	r.URL = serviceAddress
 	r.HeartbeatURL = r.URL + "/heartbeat"
 	r.RequiredServices = make([]registry.ServiceName, 0)
 	r.UpdateURL = r.URL + "/services"
-
-	ctx, err := service.Start(context.Background(),
-		host,
-		port,
-		r,
-		log.RegisterHandlers)
+	r.HttpHandler = http.HandlerFunc((&log.LogHandler{}).ServeHTTP)
+	
+	ctx, err := service.Start(context.Background(), r)
 	if err != nil {
 		stlog.Fatal(err)
 	}
