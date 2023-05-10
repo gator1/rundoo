@@ -54,26 +54,27 @@ func (r *Registry) RegisterService(config ServiceConfig) {
 }
 
 func (r *Registry) StartServices() error {
-	for _, service := range r.services {
-		if service.HttpHandler != nil {
+	for _, config := range r.services {
+		if config.HttpHandler != nil {
 			go func() {
-				log.Printf("Starting HTTP service '%s'", service.Name)
-				err := http.ListenAndServe(":8080", service.HttpHandler)
+				log.Printf("Starting HTTP service '%s'", config.Name)
+				err := http.ListenAndServe(":8080", config.HttpHandler)
 				if err != nil {
-					log.Fatalf("Failed to start HTTP service '%s': %s", service.Name, err)
+					log.Fatalf("Failed to start HTTP service '%s': %s", config.Name, err)
 				}
 			}()
 		}
+		config := config
 
-		if service.GrpcServer != nil {
+		if config.GrpcServer != nil {
 			go func() {
-				log.Printf("Starting gRPC service '%s'", service.Name)
+				log.Printf("Starting gRPC service '%s'", config.Name)
 				lis, err := net.Listen("tcp", ":9090")
 				if err != nil {
-					log.Fatalf("Failed to start gRPC service '%s': %s", service.Name, err)
+					log.Fatalf("Failed to start gRPC service '%s': %s", config.Name, err)
 				}
-				if err := service.GrpcServer.Serve(lis); err != nil {
-					log.Fatalf("Failed to serve gRPC service '%s': %s", service.Name, err)
+				if err := config.GrpcServer.Serve(lis); err != nil {
+					log.Fatalf("Failed to serve gRPC service '%s': %s", config.Name, err)
 				}
 			}()
 		}

@@ -38,6 +38,31 @@ type Product struct {
 
 type Products []Product
 
+type ProductService struct {
+	// a database dependency would go here but instead we're going to have a static map
+	products Products
+    Categories map[CategoryType]bool
+    productsMutex sync.Mutex
+}
+
+type ServiceInterface interface {
+	GetProducts() (Products, error)
+}
+
+
+// NewService instantiates a new Service.
+func NewService( /* a database connection would be injected here */ ) ServiceInterface {
+	return &ProductService{
+		products: *new(Products),
+		Categories: map[CategoryType]bool{
+			CategoryWine: true,
+        	CategoryBook: true,
+       		 CategoryTool: true,
+		},
+		productsMutex: *new(sync.Mutex),
+	}
+}
+
 var (
     products Products
     Categories = map[CategoryType]bool{
@@ -47,6 +72,13 @@ var (
     }
     productsMutex sync.Mutex
 )
+
+func (s *ProductService) GetProducts() (result Products, err error) {
+	// instead of querying a database, we just query our static map
+	
+	return products, nil
+}
+
 
 func (p Products) GetByName(name string) (*Product, error) {
 	for i := range p {

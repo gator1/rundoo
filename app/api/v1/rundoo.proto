@@ -10,15 +10,41 @@ service ProductService {
   rpc AddProduct (AddProductRequest) returns (AddProductResponse) {}
 }
 
-message User {
-  int64 id = 1;
-  string name = 2;
+message Product {
+  string name = 1;
+  string category = 2;
+  string sku = 3;
 }
 
-message GetUsersRequest {
-  repeated int64 ids = 1; 
+message GetProductsRequest {
+  
 }
   
-message GetUsersResponse {
-  repeated User users = 1; 
+message GetProductsResponse {
+  repeated Product products = 1; 
 }
+
+message SearchProductsRequest {
+  repeated Filter filters = 1;
+}
+
+message Filter {
+  string field = 1;
+  string value = 2;
+}
+
+
+message SearchProductsResponse {
+  repeated Product product = 1;
+}
+
+
+
+message AddProductRequest {
+    Product products = 1; 
+}
+  
+message AddProductResponse {
+  bool ok = 1; 
+}
+
