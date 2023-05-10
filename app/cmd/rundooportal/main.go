@@ -19,15 +19,15 @@ func main() {
 	host, port := "localhost", "5050"
 	serviceAddress := fmt.Sprintf("http://%v:%v", host, port)
 
-	var r registry.Registration
-	r.ServiceName = registry.RundooPortal
-	r.ServiceURL = serviceAddress
-	r.HeartbeatURL = r.ServiceURL + "/heartbeat"
+	var r registry.ServiceConfig
+	r.Name = registry.RundooPortal
+	r.URL = serviceAddress
+	r.HeartbeatURL = r.URL + "/heartbeat"
 	r.RequiredServices = []registry.ServiceName{
 		registry.LogService,
 		registry.ProductService,
 	}
-	r.ServiceUpdateURL = r.ServiceURL + "/services"
+	r.UpdateURL = r.URL + "/services"
 
 	ctx, err := service.Start(context.Background(),
 		host,
@@ -38,7 +38,7 @@ func main() {
 		stlog.Fatal(err)
 	}
 	if logProvider, err := registry.GetProvider(registry.LogService); err == nil {
-		log.SetClientLogger(logProvider, r.ServiceName)
+		log.SetClientLogger(logProvider, r.Name)
 	}
 
 	<-ctx.Done()

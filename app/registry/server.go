@@ -14,34 +14,34 @@ import (
 const ServerPort = ":3000"
 const ServicesURL = "http://localhost" + ServerPort + "/services"
 
-type registry struct {
-	registrations []Registration
-	mutex         *sync.RWMutex
+type Registry struct {
+	services map[string]ServiceConfig
+	mutex    *sync.RWMutex
 }
 
-func (r *registry) add(reg Registration) error {
+func (r *Registry) add(reg ServiceConfig) error {
 	r.mutex.Lock()
-	r.registrations = append(r.registrations, reg)
+	r.services[string(reg.Name)] = reg
 	r.mutex.Unlock()
 	err := r.sendRequiredServices(reg)
 	r.notify(patch{
 		Added: []patchEntry{
-			patchEntry{Name: reg.ServiceName, URL: reg.ServiceURL},
+			{Name: reg.Name, URL: reg.URL},
 		},
 	})
 	return err
 }
 
-func (r *registry) remove(url string) error {
-	for i := range r.registrations {
-		if r.registrations[i].ServiceURL == url {
+func (r *Registry) remove(url string) error {
+	for k, v := range r.services {
+		if v.URL == url {
 			r.notify(patch{
 				Removed: []patchEntry{
-					patchEntry{Name: r.registrations[i].ServiceName, URL: r.registrations[i].ServiceURL},
+					{Name: ServiceName(k), URL: v.URL},
 				},
 			})
 			r.mutex.Lock()
-			r.registrations = append(r.registrations[:i], r.registrations[i+1:]...)
+			delete(r.services, k)
 			r.mutex.Unlock()
 			return nil
 		}
@@ -49,11 +49,11 @@ func (r *registry) remove(url string) error {
 	return fmt.Errorf("Service at URL %v not found", url)
 }
 
-func (r registry) notify(p patch) {
+func (r Registry) notify(p patch) {
 	r.mutex.RLock()
 	defer r.mutex.RUnlock()
-	for _, reg := range r.registrations {
-		go func(reg Registration) {
+	for _, reg := range r.services {
+		go func(reg ServiceConfig) {
 			for _, reqService := range reg.RequiredServices {
 				p := patch{Added: []patchEntry{}, Removed: []patchEntry{}}
 				sendUpdate := false
@@ -70,7 +70,7 @@ func (r registry) notify(p patch) {
 					}
 				}
 				if sendUpdate {
-					err := r.sendPatch(p, reg.ServiceUpdateURL)
+					err := r.sendPatch(p, reg.UpdateURL)
 					if err != nil {
 						log.Println(err)
 						return
@@ -81,7 +81,7 @@ func (r registry) notify(p patch) {
 	}
 }
 
-func (r registry) sendPatch(p patch, url string) error {
+func (r Registry) sendPatch(p patch, url string) error {
 	d, err := json.Marshal(p)
 	if err != nil {
 		return err
@@ -93,34 +93,34 @@ func (r registry) sendPatch(p patch, url string) error {
 	return nil
 }
 
-func (r registry) sendRequiredServices(reg Registration) error {
+func (r Registry) sendRequiredServices(reg ServiceConfig) error {
 	r.mutex.RLock()
 	defer r.mutex.RUnlock()
 
 	var p patch
-	for _, serviceReg := range r.registrations {
+	for _, serviceReg := range r.services {
 		for _, reqService := range reg.RequiredServices {
-			if serviceReg.ServiceName == reqService {
+			if serviceReg.Name == reqService {
 				p.Added = append(p.Added, patchEntry{
-					Name: serviceReg.ServiceName,
-					URL:  serviceReg.ServiceURL,
+					Name: serviceReg.Name,
+					URL:  serviceReg.URL,
 				})
 			}
 		}
 	}
-	err := r.sendPatch(p, reg.ServiceUpdateURL)
+	err := r.sendPatch(p, reg.UpdateURL)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *registry) heartbeat(freq time.Duration) {
+func (r *Registry) heartbeat(freq time.Duration) {
 	for {
 		var wg sync.WaitGroup
-		for _, reg := range r.registrations {
+		for _, reg := range r.services {
 			wg.Add(1)
-			go func(reg Registration) {
+			go func(reg ServiceConfig) {
 				defer wg.Done()
 				success := true
 				for attempts := 0; attempts < 3; attempts++ {
@@ -128,16 +128,16 @@ func (r *registry) heartbeat(freq time.Duration) {
 					if err != nil {
 						log.Println(err)
 					} else if res.StatusCode == http.StatusOK {
-						log.Printf("Heartbeat check passed for %v", reg.ServiceName)
+						log.Printf("Heartbeat check passed for %v", reg.Name)
 						if !success {
 							r.add(reg)
 						}
 						break
 					}
-					log.Printf("Heartbeat check failed for %v", reg.ServiceName)
+					log.Printf("Heartbeat check failed for %v", reg.Name)
 					if success {
 						success = false
-						r.remove(reg.ServiceURL)
+						r.remove(reg.URL)
 					}
 					time.Sleep(3 * time.Second) // wait to try again
 				}
@@ -148,14 +148,13 @@ func (r *registry) heartbeat(freq time.Duration) {
 	}
 }
 
-var reg = registry{registrations: make([]Registration, 0),
-	mutex: new(sync.RWMutex),
-}
+var regi Registry = *NewRegistry()
+
 var once sync.Once
 
 func SetupRegistryService() {
 	once.Do(func() {
-		go reg.heartbeat(3 * time.Second)
+		go regi.heartbeat(3 * time.Second)
 	})
 }
 
@@ -166,15 +165,15 @@ func (s RegistryService) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case http.MethodPost:
 		dec := json.NewDecoder(req.Body)
-		var r Registration
+		var r ServiceConfig
 		err := dec.Decode(&r)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		log.Printf("Adding service: %v with URL: %v", r.ServiceName, r.ServiceURL)
-		err = reg.add(r)
+		log.Printf("Adding service: %v with URL: %v", r.Name, r.URL)
+		err = regi.add(r)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -190,7 +189,7 @@ func (s RegistryService) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 		url := string(payload)
 		log.Printf("Removing service at URL: %v", url)
-		err = reg.remove(url)
+		err = regi.remove(url)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)

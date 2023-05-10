@@ -15,12 +15,12 @@ func main() {
 	host, port := "localhost", "4000"
 	serviceAddress := fmt.Sprintf("http://%v:%v", host, port)
 
-	var r registry.Registration
-	r.ServiceName = registry.LogService
-	r.ServiceURL = serviceAddress
-	r.HeartbeatURL = r.ServiceURL + "/heartbeat"
+	var r registry.ServiceConfig
+	r.Name = registry.LogService
+	r.URL = serviceAddress
+	r.HeartbeatURL = r.URL + "/heartbeat"
 	r.RequiredServices = make([]registry.ServiceName, 0)
-	r.ServiceUpdateURL = r.ServiceURL + "/services"
+	r.UpdateURL = r.URL + "/services"
 
 	ctx, err := service.Start(context.Background(),
 		host,

@@ -56,7 +56,7 @@ func GetProvider(name ServiceName) (string, error) {
 	return prov.get(name)
 }
 
-func RegisterService(r Registration) error {
+func RegisterService(r ServiceConfig) error {
 
 	heartbeatURL, err := url.Parse(r.HeartbeatURL)
 	if err != nil {
@@ -65,7 +65,7 @@ func RegisterService(r Registration) error {
 	http.HandleFunc(heartbeatURL.Path, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
-	serviceUpdateURL, err := url.Parse(r.ServiceUpdateURL)
+	serviceUpdateURL, err := url.Parse(r.UpdateURL)
 	if err != nil {
 		return err
 	}
