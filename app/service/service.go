@@ -5,7 +5,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
+	"strconv"
 )
 
 func Start(ctx context.Context, config registry.ServiceConfig) (context.Context, error) {
@@ -47,6 +49,29 @@ func startService(ctx context.Context, config registry.ServiceConfig) context.Co
 		cancel()
 	}()
 
+	if config.GrpcServer != nil {
+		portInt, _ := strconv.Atoi(config.Port)
+		rpcPort := ":"+strconv.Itoa(portInt + 1)
+
+		con, err := net.Listen("tcp", rpcPort)
+		if err != nil {
+			log.Printf("Starting gRPC user service on %s...\n", con.Addr().String())
+			panic(err)
+		}
+
+		go func() {
+			log.Printf("Starting gRPC user service on %s...\n", con.Addr().String())
+			err = config.GrpcServer.Serve(con)
+			if err != nil {
+				log.Printf("Starting gRPC user service on %s...\n", con.Addr().String())
+				panic(err)
+			}
+			cancel()
+		}()
+
+	}
+
+	
 
 	go func() {
 		fmt.Printf("%v started. Press any key to stop.\n", config.Name)

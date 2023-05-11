@@ -33,7 +33,7 @@ func (ctlr *productsServiceController) GetProducts(ctx context.Context, req *run
 		resp.Products = append(resp.Products, marshalProduct(&u))
 	}
 
-	log.Printf("handled GetProducts")
+	log.Printf("Grpc handled GetProducts")
 	return
 }
 

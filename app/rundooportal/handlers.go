@@ -1,14 +1,18 @@
 package rundooportal
 
 import (
+	rundoogrpc "app/api/v1"
 	"app/products"
 	"app/registry"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"google.golang.org/grpc"
 	"log"
 	"net/http"
 	"strings"
+	"strconv"
 )
 
 func HttpHandler() {
@@ -26,7 +30,7 @@ func (sh RundooHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	pathSegments := strings.Split(r.URL.Path, "/")
 	switch len(pathSegments) {
 	case 2: // /products
-		sh.renderProducts(w, r)
+		sh.renderProductsGrpc(w, r)
 	case 3: // /products/{:sku}
 		sku := products.SKU(pathSegments[2])
 		if sku == "AddProduct" {
@@ -45,6 +49,7 @@ func (sh RundooHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 }
+
 
 func (RundooHandler) renderProducts(w http.ResponseWriter, r *http.Request) {
 	var err error
@@ -76,6 +81,83 @@ func (RundooHandler) renderProducts(w http.ResponseWriter, r *http.Request) {
 
 	rootTemplate.Lookup("products.gohtml").Execute(w, s)
 }
+
+func (RundooHandler) renderProductsGrpc(w http.ResponseWriter, r *http.Request) {
+	var err error
+	defer func() {
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Println("Error retrieving products: ", err)
+		}
+	}()
+
+	serviceURL, err := registry.GetProvider(registry.ProductService)
+	if err != nil {
+		log.Println("Error getting provider ProductService: ", err)
+		return
+	}
+	record := strings.Split(serviceURL, ":")  // http://localhost:port
+	portInt, _ := strconv.Atoi(record[2])
+	rpcPort := ":"+strconv.Itoa(portInt + 1)
+
+	conn, err := grpc.Dial("localhost"+rpcPort, grpc.WithInsecure())
+    if err != nil {
+        log.Fatalf("failed to dial: %v", err)
+    }
+    defer conn.Close()
+
+    client := rundoogrpc.NewProductServiceClient(conn)
+
+    response, err := client.GetProducts(context.Background(), &rundoogrpc.GetProductsRequest{})
+    if err != nil {
+        log.Fatalf("failed to get products: %v", err)
+    }
+
+    for _, product := range response.GetProducts() {
+        log.Printf("Product: %v\n", product)
+    }
+	
+
+	rootTemplate.Lookup("products.gohtml").Execute(w, response.Products)
+}
+
+
+/*
+
+func (RundooHandler) renderProductsGrpc(w http.ResponseWriter, r *http.Request) {
+	var err error
+	defer func() {
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Println("Error retrieving products: ", err)
+		}
+	}()
+
+	serviceURL, err := registry.GetProvider(registry.ProductService)
+	if err != nil {
+		log.Println("Error getting provider ProductService: ", err)
+		return
+	}
+	record := strings.Split(serviceURL, ":")  // http://localhost:port
+	portInt, _ := strconv.Atoi(record[2])
+	rpcPort := ":"+strconv.Itoa(portInt + 1)
+
+	grpcService, err := rundoogrpc.NewGRPCService(rpcPort)
+	if err != nil {
+		log.Printf("error instantiating gRPC service: %v\n", err)
+
+	}
+	rpcResult, remoteErr := grpcService.GetProducts()
+	if remoteErr != nil {
+		log.Printf("grpcService.GetProducts() returned an error: %v\n", remoteErr)
+	} else {
+		log.Printf("grpcService.GetProducts() returned: \n")
+	}
+	
+
+	rootTemplate.Lookup("products.gohtml").Execute(w, rpcResult)
+}
+*/
 
 func (RundooHandler) renderProduct(w http.ResponseWriter, r *http.Request, sku products.SKU) {
 
@@ -110,6 +192,7 @@ func (RundooHandler) renderProduct(w http.ResponseWriter, r *http.Request, sku p
 
 	rootTemplate.Lookup("productdetails.gohtml").Execute(w, s)
 }
+
 
 func (RundooHandler) renderAddProduct(w http.ResponseWriter, r *http.Request) {
 

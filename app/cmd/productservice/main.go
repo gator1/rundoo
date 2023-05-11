@@ -9,8 +9,6 @@ import (
 	"context"
 	"fmt"
 	stlog "log"
-	"net"
-	"strconv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -36,14 +34,6 @@ func main() {
 	}
 	r.UpdateURL = r.URL + "/services"
 	r.HttpHandler = handler
-	ctx, err := service.Start(context.Background(), r)
-	if err != nil {
-		stlog.Fatal(err)
-	}
-	if logProvider, err := registry.GetProvider(registry.LogService); err == nil {
-		log.SetClientLogger(logProvider, r.Name)
-	}
-
 	
 	// configure our gRPC service controller
 	productServiceController := NewProductsServiceController(productService)
@@ -52,21 +42,14 @@ func main() {
 	server := grpc.NewServer()
 	rundoogrpc.RegisterProductServiceServer(server, productServiceController)
 	reflection.Register(server)
+	r.GrpcServer = server
 
-	portInt, _ := strconv.Atoi(port)
-	rpcPort := ":"+strconv.Itoa(portInt + 1)
-
-	con, err := net.Listen("tcp", rpcPort)
+	ctx, err := service.Start(context.Background(), r)
 	if err != nil {
-		stlog.Printf("Starting gRPC user service on %s...\n", con.Addr().String())
-		panic(err)
+		stlog.Fatal(err)
 	}
-
-	stlog.Printf("Starting gRPC user service on %s...\n", con.Addr().String())
-	err = server.Serve(con)
-	if err != nil {
-		stlog.Printf("Starting gRPC user service on %s...\n", con.Addr().String())
-		panic(err)
+	if logProvider, err := registry.GetProvider(registry.LogService); err == nil {
+		log.SetClientLogger(logProvider, r.Name)
 	}
 
 	<-ctx.Done()

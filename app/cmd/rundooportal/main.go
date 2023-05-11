@@ -41,9 +41,11 @@ func main() {
 	if err != nil {
 		stlog.Fatal(err)
 	}
+	
 	if logProvider, err := registry.GetProvider(registry.LogService); err == nil {
 		log.SetClientLogger(logProvider, r.Name)
 	}
+
 
 	<-ctx.Done()
 	fmt.Println("Shutting down rundoo portal")
