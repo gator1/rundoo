@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"sync"
+	rundoogrpc "app/api/v1"
 )
 
 type SKU string
@@ -47,6 +48,8 @@ type ProductService struct {
 
 type ServiceInterface interface {
 	GetProducts() (Products, error)
+	SearchProducts(filters []rundoogrpc.Filter) (Products, error)
+	AddProduct(product Product) (bool, error)
 }
 
 
@@ -77,6 +80,85 @@ func (s *ProductService) GetProducts() (result Products, err error) {
 	// instead of querying a database, we just query our static map
 	
 	return products, nil
+}
+
+func (p Products) toProto() []*rundoogrpc.Product {
+	protoProducts := make([]*rundoogrpc.Product, len(p))
+	for i, product := range p {
+		protoProducts[i] = &rundoogrpc.Product{
+			Name:     product.Name,
+			Category: string(product.Category),
+			Sku:      string(product.Sku),
+		}
+	}
+	return protoProducts
+}
+
+func (p *ProductService) SearchProducts(filters []rundoogrpc.Filter) (Products, error) {
+	// Create a new Products slice to store filtered products
+	filteredProducts := make(Products, 0)
+
+	// Loop over the p.Products slice and apply filters
+	for _, product := range p.products {
+		if product.MatchFilters(filters) {
+			filteredProducts = append(filteredProducts, product)
+		}
+	}
+
+	// Return the filtered products slice and any error that may have occurred
+	return filteredProducts, nil
+}
+
+func (p *Product) MatchFilters(filters []rundoogrpc.Filter) bool {
+	// Apply the filters to the product and determine if it matches
+	// Return true if the product matches all filters, false otherwise
+	// You would need to implement the logic specific to your application's filter criteria
+	return true
+}
+
+/*
+func (s *ProductService) SearchProducts(ctx context.Context, req *rundoogrpc.SearchProductsRequest) (*rundoogrpc.SearchProductsResponse, error) {
+	// instead of querying a database, we just query our static map
+
+	var matchedProducts Products
+	for _, filter := range req.GetFilters() {
+		switch filter.GetField() {
+		case "name":
+			for _, product := range s.products {
+				if product.Name == filter.GetValue() {
+					matchedProducts = append(matchedProducts, product)
+				}
+			}
+		case "category":
+			for _, product := range s.products {
+				if product.Category == CategoryType(filter.GetValue()) {
+					matchedProducts = append(matchedProducts, product)
+				}
+			}
+		case "sku":
+			sku, err := NewSKU(filter.GetValue())
+			if err != nil {
+				return nil, err
+			}
+			product, err := s.products.GetBySKU(sku)
+			if err != nil {
+				return nil, err
+			}
+			matchedProducts = append(matchedProducts, *product)
+		}
+	}
+
+	return &rundoogrpc.SearchProductsResponse{
+		Products: matchedProducts.toProto(),
+	}, nil
+}
+*/
+
+func (s *ProductService) AddProduct(product Product) (bool,error) {
+	// Instead of using a database, we just add the product to our static map.
+
+
+	return true, nil
 }
 
 

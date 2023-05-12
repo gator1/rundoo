@@ -35,13 +35,13 @@ message Filter {
 
 
 message SearchProductsResponse {
-  repeated Product product = 1;
+  repeated Product products = 1;
 }
 
 
 
 message AddProductRequest {
-    Product products = 1; 
+    Product product = 1; 
 }
   
 message AddProductResponse {
