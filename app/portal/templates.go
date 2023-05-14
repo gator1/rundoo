@@ -19,9 +19,9 @@ func ImportTemplates() error {
     fmt.Println("Current working directory:", cwd)
 
 	rootTemplate, err = template.ParseFiles(
-		"rundooportal/products.gohtml",
-		"rundooportal/addproduct.gohtml",
-		"rundooportal/productdetails.gohtml")
+		"portal/products.gohtml",
+		"portal/addproduct.gohtml",
+		"portal/productdetails.gohtml")
 
 	if err != nil {
 		return err

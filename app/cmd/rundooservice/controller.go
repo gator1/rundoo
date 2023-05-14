@@ -4,18 +4,18 @@ import (
 	"context"
 	"log"
 
-	"app/products"
+	"app/rundoo"
 	rundoogrpc "app/api/v1"
 )
 
 // productsServiceController implements the gRPC ProductsServiceServer interface.
 type productsServiceController struct {
-	productsInterface products.ServiceInterface
+	productsInterface rundoo.ServiceInterface
 	rundoogrpc.UnimplementedProductServiceServer
 }
 
 // NewProductServiceController instantiates a new ProducterviceServer.
-func NewProductsServiceController(productInterface products.ServiceInterface) rundoogrpc.ProductServiceServer {
+func NewProductsServiceController(productInterface rundoo.ServiceInterface) rundoogrpc.ProductServiceServer {
 	return &productsServiceController{
 		productsInterface: productInterface,
 	}
@@ -38,6 +38,6 @@ func (ctlr *productsServiceController) GetProducts(ctx context.Context, req *run
 }
 
 // marshalProductmarshals a business object Product into a gRPC layer Product.
-func marshalProduct(p *products.Product) *rundoogrpc.Product {
+func marshalProduct(p *rundoo.Product) *rundoogrpc.Product {
 	return &rundoogrpc.Product{Sku: string(p.Sku), Category: string(p.Category), Name: p.Name}
 }

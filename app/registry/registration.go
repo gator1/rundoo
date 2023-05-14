@@ -16,18 +16,18 @@ type ServiceConfig struct {
 	UpdateURL        string
 	Host             string
 	Port             string
-	Mux              *http.ServeMux
-	HttpHandler      http.Handler `json:"-"`
-	GrpcServer       *grpc.Server `json:"-"`
+	Mux              *http.ServeMux `json:"-"`
+	HttpHandler      http.Handler   `json:"-"`
+	GrpcServer       *grpc.Server   `json:"-"`
 	RequiredServices []ServiceName
 }
 
 type ServiceName string
 
 const (
-	LogService     = ServiceName("LogService")
+	LogService    = ServiceName("LogService")
 	RundooPortal  = ServiceName("RundooPortal")
-	ProductService = ServiceName("ProductService")
+	RundooService = ServiceName("RundooService")
 )
 
 type patchEntry struct {
@@ -43,9 +43,7 @@ type patch struct {
 func NewRegistry() *Registry {
 	return &Registry{
 		services: make(map[string]ServiceConfig),
-		mutex: new(sync.RWMutex),
-		
-
+		mutex:    new(sync.RWMutex),
 	}
 }
 

@@ -4,9 +4,11 @@ import (
 	"context"
 	"time"
 
-	"app/products"
-	rundoogrpc "app/api/v1"
 	"google.golang.org/grpc"
+
+	rundoogrpc "app/api/v1"
+	"app/rundoo"	
+	
 )
 
 var defaultRequestTimeout = time.Second * 10
@@ -16,7 +18,7 @@ type grpcService struct {
 }
 
 // NewGRPCService creates a new gRPC user service connection using the specified connection string.
-func NewGRPCService(connString string) (products.ServiceInterface, error) {
+func NewGRPCService(connString string) (rundoo.ServiceInterface, error) {
 	conn, err := grpc.Dial(connString, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
@@ -25,7 +27,7 @@ func NewGRPCService(connString string) (products.ServiceInterface, error) {
 	return &grpcService{GrpcClient: rundoogrpc.NewProductServiceClient(conn)}, nil
 }
 
-func (s *grpcService) GetProducts() (result products.Products, err error) {
+func (s *grpcService) GetProducts() (result rundoo.Products, err error) {
 	req := &rundoogrpc.GetProductsRequest{}
 
 	ctx, cancelFunc := context.WithTimeout(context.Background(), defaultRequestTimeout)
@@ -38,10 +40,10 @@ func (s *grpcService) GetProducts() (result products.Products, err error) {
 
 
 	for _, grpcProduct:= range resp.GetProducts() {
-		result = append(result, products.Product{
+		result = append(result, rundoo.Product{
 			Name:     grpcProduct.Name,
-			Category: products.CategoryType(grpcProduct.Category),
-			Sku:      products.SKU(grpcProduct.Sku),
+			Category: rundoo.CategoryType(grpcProduct.Category),
+			Sku:      rundoo.SKU(grpcProduct.Sku),
 		})
 	}
 	
@@ -51,7 +53,7 @@ func (s *grpcService) GetProducts() (result products.Products, err error) {
 
 
 
-func (s *grpcService) SearchProducts(filters []rundoogrpc.Filter) (result products.Products, err error) {
+func (s *grpcService) SearchProducts(filters []rundoogrpc.Filter) (result rundoo.Products, err error) {
 	// Convert the []products.Filter slice to []*rundoogrpc.Filter slice
 	grpcFilters := make([]*rundoogrpc.Filter, len(filters))
 	for i, f := range filters {
@@ -82,7 +84,7 @@ func (s *grpcService) SearchProducts(filters []rundoogrpc.Filter) (result produc
 }
 
 
-func (s *grpcService) AddProduct(product products.Product) (ok bool, err error) {
+func (s *grpcService) AddProduct(product rundoo.Product) (ok bool, err error) {
 	req := &rundoogrpc.AddProductRequest{
 		Product: &rundoogrpc.Product{
 			Name:  product.Name,
@@ -100,11 +102,11 @@ func (s *grpcService) AddProduct(product products.Product) (ok bool, err error) 
 }
 
 
-func unmarshalProduct(grpcProduct *rundoogrpc.Product) *products.Product {
-	p := &products.Product{
+func unmarshalProduct(grpcProduct *rundoogrpc.Product) *rundoo.Product {
+	p := &rundoo.Product{
 		Name:  grpcProduct.Name,
-		Category:  products.CategoryType(grpcProduct.Category),
-		Sku: products.SKU(grpcProduct.Sku),
+		Category:  rundoo.CategoryType(grpcProduct.Category),
+		Sku: rundoo.SKU(grpcProduct.Sku),
 	}
 	return p
 }

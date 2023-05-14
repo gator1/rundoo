@@ -18,6 +18,8 @@ func main() {
 	serviceAddress := fmt.Sprintf("http://%v:%v", host, port)
 
 	var r registry.ServiceConfig
+
+	handler := &log.LogHandler{}
 	
 	r.Name = registry.LogService
 	r.Host = host
@@ -26,8 +28,12 @@ func main() {
 	r.HeartbeatURL = r.URL + "/heartbeat"
 	r.RequiredServices = make([]registry.ServiceName, 0)
 	r.UpdateURL = r.URL + "/services"
-	r.HttpHandler = http.HandlerFunc((&log.LogHandler{}).ServeHTTP)
-	
+	//r.HttpHandler = http.HandlerFunc((&log.LogHandler{}).ServeHTTP)
+	r.HttpHandler = handler
+	r.Mux = http.NewServeMux()
+	r.Mux.Handle("/log", handler)
+	r.Mux.Handle("/log/", handler)
+
 	ctx, err := service.Start(context.Background(), r)
 	if err != nil {
 		stlog.Fatal(err)

@@ -1,16 +1,20 @@
 package main
 
 import (
-	rundoogrpc "app/api/v1"
-	"app/log"
-	"app/products"
-	"app/registry"
-	"app/service"
+	
 	"context"
 	"fmt"
 	stlog "log"
+	"net/http"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+
+	rundoogrpc "app/api/v1"
+	"app/log"
+	"app/rundoo"
+	"app/registry"
+	"app/service"
 )
 
 func main() {
@@ -20,11 +24,11 @@ func main() {
 	var r registry.ServiceConfig
 
 	// configure our service
-	productService := products.NewService()
+	productService := rundoo.NewService()
 
 
-	handler := &products.ProductsHandler{}
-	r.Name = registry.ProductService
+	handler := &rundoo.ProductsHandler{}
+	r.Name = registry.RundooService
 	r.Host = host
 	r.Port = port
 	r.URL = serviceAddress
@@ -34,6 +38,12 @@ func main() {
 	}
 	r.UpdateURL = r.URL + "/services"
 	r.HttpHandler = handler
+
+	r.HttpHandler = handler
+	r.Mux = http.NewServeMux()
+	r.Mux.Handle("/products", handler)
+	r.Mux.Handle("/products/", handler)
+
 	
 	// configure our gRPC service controller
 	productServiceController := NewProductsServiceController(productService)

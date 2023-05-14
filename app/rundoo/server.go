@@ -1,4 +1,4 @@
-package products
+package rundoo
 
 import (
 	"bytes"

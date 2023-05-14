@@ -1,14 +1,15 @@
 package main
 
 import (
-	"app/log"
-	"app/registry"
-	"app/rundooportal"
-	"app/service"
 	"context"
 	"fmt"
 	stlog "log"
 	"net/http"
+
+	"app/log"
+	rundooportal "app/portal"
+	"app/registry"
+	"app/service"
 )
 
 func main() {
@@ -30,7 +31,7 @@ func main() {
 	r.HeartbeatURL = r.URL + "/heartbeat"
 	r.RequiredServices = []registry.ServiceName{
 		registry.LogService,
-		registry.ProductService,
+		registry.RundooService,
 	}
 	r.UpdateURL = r.URL + "/services"
 	r.HttpHandler = handler
@@ -41,13 +42,14 @@ func main() {
 	if err != nil {
 		stlog.Fatal(err)
 	}
-	
+
 	if logProvider, err := registry.GetProvider(registry.LogService); err == nil {
 		log.SetClientLogger(logProvider, r.Name)
 	}
 
-
 	<-ctx.Done()
 	fmt.Println("Shutting down rundoo portal")
+	stlog.Println("Shutting down rundoo portal")
+
 
 }

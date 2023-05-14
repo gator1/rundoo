@@ -1,18 +1,20 @@
 package rundooportal
 
 import (
-	rundoogrpc "app/api/v1"
-	"app/products"
-	"app/registry"
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"google.golang.org/grpc"
 	"log"
 	"net/http"
-	"strings"
 	"strconv"
+	"strings"
+
+	"google.golang.org/grpc"
+
+	rundoogrpc "app/api/v1"
+	"app/registry"
+	products "app/rundoo"
 )
 
 func HttpHandler() {
@@ -50,7 +52,6 @@ func (sh RundooHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 func (RundooHandler) renderProducts(w http.ResponseWriter, r *http.Request) {
 	var err error
 	defer func() {
@@ -60,7 +61,7 @@ func (RundooHandler) renderProducts(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	serviceURL, err := registry.GetProvider(registry.ProductService)
+	serviceURL, err := registry.GetProvider(registry.RundooService)
 	if err != nil {
 		log.Println("Error getting provider ProductService: ", err)
 		return
@@ -91,36 +92,36 @@ func (RundooHandler) renderProductsGrpc(w http.ResponseWriter, r *http.Request) 
 		}
 	}()
 
-	serviceURL, err := registry.GetProvider(registry.ProductService)
+	log.Println("renderProductsGrpc called!")
+
+	serviceURL, err := registry.GetProvider(registry.RundooService)
 	if err != nil {
 		log.Println("Error getting provider ProductService: ", err)
 		return
 	}
-	record := strings.Split(serviceURL, ":")  // http://localhost:port
+	record := strings.Split(serviceURL, ":") // http://localhost:port
 	portInt, _ := strconv.Atoi(record[2])
-	rpcPort := ":"+strconv.Itoa(portInt + 1)
+	rpcPort := ":" + strconv.Itoa(portInt+1)
 
 	conn, err := grpc.Dial("localhost"+rpcPort, grpc.WithInsecure())
-    if err != nil {
-        log.Fatalf("failed to dial: %v", err)
-    }
-    defer conn.Close()
+	if err != nil {
+		log.Fatalf("failed to dial: %v", err)
+	}
+	defer conn.Close()
 
-    client := rundoogrpc.NewProductServiceClient(conn)
+	client := rundoogrpc.NewProductServiceClient(conn)
 
-    response, err := client.GetProducts(context.Background(), &rundoogrpc.GetProductsRequest{})
-    if err != nil {
-        log.Fatalf("failed to get products: %v", err)
-    }
+	response, err := client.GetProducts(context.Background(), &rundoogrpc.GetProductsRequest{})
+	if err != nil {
+		log.Fatalf("failed to get products: %v", err)
+	}
 
-    for _, product := range response.GetProducts() {
-        log.Printf("Product: %v\n", product)
-    }
-	
+	for _, product := range response.GetProducts() {
+		log.Printf("Product: %v\n", product)
+	}
 
 	rootTemplate.Lookup("products.gohtml").Execute(w, response.Products)
 }
-
 
 /*
 
@@ -153,7 +154,7 @@ func (RundooHandler) renderProductsGrpc(w http.ResponseWriter, r *http.Request) 
 	} else {
 		log.Printf("grpcService.GetProducts() returned: \n")
 	}
-	
+
 
 	rootTemplate.Lookup("products.gohtml").Execute(w, rpcResult)
 }
@@ -170,10 +171,10 @@ func (RundooHandler) renderProduct(w http.ResponseWriter, r *http.Request, sku p
 		}
 	}()
 
-	serviceURL, err := registry.GetProvider(registry.ProductService)
+	serviceURL, err := registry.GetProvider(registry.RundooService)
 	if err != nil {
 		log.Println("Error redner product GetProvider : ", string(sku))
-		
+
 		return
 	}
 
@@ -192,7 +193,6 @@ func (RundooHandler) renderProduct(w http.ResponseWriter, r *http.Request, sku p
 
 	rootTemplate.Lookup("productdetails.gohtml").Execute(w, s)
 }
-
 
 func (RundooHandler) renderAddProduct(w http.ResponseWriter, r *http.Request) {
 
@@ -215,10 +215,10 @@ func (RundooHandler) postAddProduct(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	}()
 
-	serviceURL, err := registry.GetProvider(registry.ProductService)
+	serviceURL, err := registry.GetProvider(registry.RundooService)
 	if err != nil {
 		log.Println("Error redner product GetProvider : ", err)
-		
+
 		return
 	}
 
@@ -229,19 +229,18 @@ func (RundooHandler) postAddProduct(w http.ResponseWriter, r *http.Request) {
 		log.Println("Wrong format of SKU: ", err)
 		return
 	}
-	
+
 	p := products.Product{
-		Name: name,
+		Name:     name,
 		Category: categoryType,
-		Sku: sku,
+		Sku:      sku,
 	}
-	
+
 	data, err := json.Marshal(p)
 	if err != nil {
 		log.Println("Failed to convert product to JSON: ", p, err)
 	}
 
-	
 	res, err := http.Post(fmt.Sprintf("%v/products/AddProduct", serviceURL), "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		log.Println("Failed to save product to Product Service", err)
