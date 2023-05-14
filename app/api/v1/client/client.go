@@ -49,28 +49,7 @@ func (s *grpcService) GetProducts() (result products.Products, err error) {
 	
 }
 
-/*
 
-func (s *grpcService) SearchProducts(filters []rundoogrpc.Filter) (result products.Products, err error) {
-	req := &rundoogrpc.SearchProductsRequest{
-		Filters: filters,
-	}
-
-	ctx, cancelFunc := context.WithTimeout(context.Background(), defaultRequestTimeout)
-	defer cancelFunc()
-
-	resp, err := s.GrpcClient.SearchProducts(ctx, req)
-	if err != nil {
-		return
-	}
-
-	for _, grpcProduct := range resp.GetProducts() {
-		u := unmarshalProduct(grpcProduct)
-		result = append(result, u) 
-	}
-
-	return
-}*/
 
 func (s *grpcService) SearchProducts(filters []rundoogrpc.Filter) (result products.Products, err error) {
 	// Convert the []products.Filter slice to []*rundoogrpc.Filter slice
