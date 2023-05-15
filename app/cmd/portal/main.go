@@ -38,6 +38,9 @@ func main() {
 	r.Mux = http.NewServeMux()
 	r.Mux.Handle("/products", handler)
 	r.Mux.Handle("/products/", handler)
+	fileServer := http.FileServer(http.Dir("./ui/static/"))
+	r.Mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+
 	ctx, err := service.Start(context.Background(), r)
 	if err != nil {
 		stlog.Fatal(err)

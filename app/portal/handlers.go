@@ -14,7 +14,7 @@ import (
 
 	rundoogrpc "app/api/v1"
 	"app/registry"
-	products "app/rundoo"
+	"app/internal/data"
 )
 
 func HttpHandler() {
@@ -23,6 +23,8 @@ func HttpHandler() {
 	h := new(RundooHandler)
 	http.Handle("/products", h)
 	http.Handle("/products/", h)
+
+	
 }
 
 type RundooHandler struct{}
@@ -34,7 +36,7 @@ func (sh RundooHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case 2: // /products
 		sh.renderProductsGrpc(w, r)
 	case 3: // /products/{:sku}
-		sku := products.SKU(pathSegments[2])
+		sku := data.SKU(pathSegments[2])
 		if sku == "AddProduct" {
 			sh.renderAddProduct(w, r)
 
@@ -73,14 +75,21 @@ func (RundooHandler) renderProducts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var s products.Products
+	var s data.Products
 	err = json.NewDecoder(res.Body).Decode(&s)
 	if err != nil {
 		log.Println("Error json decodes peoducts: ", err)
 		return
 	}
 
-	rootTemplate.Lookup("products.gohtml").Execute(w, s)
+	err = rootTemplate.ExecuteTemplate(w, "base", s)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal server error", 500)
+		return
+	}
+
+	// rootTemplate.Lookup("home.html").Execute(w, s)
 }
 
 func (RundooHandler) renderProductsGrpc(w http.ResponseWriter, r *http.Request) {
@@ -119,48 +128,19 @@ func (RundooHandler) renderProductsGrpc(w http.ResponseWriter, r *http.Request) 
 	for _, product := range response.GetProducts() {
 		log.Printf("Product: %v\n", product)
 	}
-
-	rootTemplate.Lookup("products.gohtml").Execute(w, response.Products)
-}
-
-/*
-
-func (RundooHandler) renderProductsGrpc(w http.ResponseWriter, r *http.Request) {
-	var err error
-	defer func() {
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			log.Println("Error retrieving products: ", err)
-		}
-	}()
-
-	serviceURL, err := registry.GetProvider(registry.ProductService)
+	err = rootTemplate.ExecuteTemplate(w, "base", response.Products)
 	if err != nil {
-		log.Println("Error getting provider ProductService: ", err)
+		log.Print(err.Error())
+		http.Error(w, "Internal server error", 500)
 		return
 	}
-	record := strings.Split(serviceURL, ":")  // http://localhost:port
-	portInt, _ := strconv.Atoi(record[2])
-	rpcPort := ":"+strconv.Itoa(portInt + 1)
 
-	grpcService, err := rundoogrpc.NewGRPCService(rpcPort)
-	if err != nil {
-		log.Printf("error instantiating gRPC service: %v\n", err)
-
-	}
-	rpcResult, remoteErr := grpcService.GetProducts()
-	if remoteErr != nil {
-		log.Printf("grpcService.GetProducts() returned an error: %v\n", remoteErr)
-	} else {
-		log.Printf("grpcService.GetProducts() returned: \n")
-	}
-
-
-	rootTemplate.Lookup("products.gohtml").Execute(w, rpcResult)
+	// rootTemplate.Lookup("products.gohtml").Execute(w, response.Products)
 }
-*/
 
-func (RundooHandler) renderProduct(w http.ResponseWriter, r *http.Request, sku products.SKU) {
+
+
+func (RundooHandler) renderProduct(w http.ResponseWriter, r *http.Request, sku data.SKU) {
 
 	var err error
 	defer func() {
@@ -184,7 +164,7 @@ func (RundooHandler) renderProduct(w http.ResponseWriter, r *http.Request, sku p
 		return
 	}
 
-	var s products.Product
+	var s data.Product
 	err = json.NewDecoder(res.Body).Decode(&s)
 	if err != nil {
 		log.Println("Error decodes product : ", string(sku))
@@ -223,14 +203,14 @@ func (RundooHandler) postAddProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	name := r.FormValue("Name")
-	categoryType := products.CategoryType(r.FormValue("Category"))
-	sku, err := products.NewSKU(r.FormValue("Sku"))
+	categoryType := data.CategoryType(r.FormValue("Category"))
+	sku, err := data.NewSKU(r.FormValue("Sku"))
 	if err != nil {
 		log.Println("Wrong format of SKU: ", err)
 		return
 	}
 
-	p := products.Product{
+	p := data.Product{
 		Name:     name,
 		Category: categoryType,
 		Sku:      sku,

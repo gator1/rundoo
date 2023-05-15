@@ -6,6 +6,8 @@ import (
 
 	"app/rundoo"
 	rundoogrpc "app/api/v1"
+	"app/internal/data"
+
 )
 
 // productsServiceController implements the gRPC ProductsServiceServer interface.
@@ -38,6 +40,6 @@ func (ctlr *productsServiceController) GetProducts(ctx context.Context, req *run
 }
 
 // marshalProductmarshals a business object Product into a gRPC layer Product.
-func marshalProduct(p *rundoo.Product) *rundoogrpc.Product {
+func marshalProduct(p *data.Product) *rundoogrpc.Product {
 	return &rundoogrpc.Product{Sku: string(p.Sku), Category: string(p.Category), Name: p.Name}
 }

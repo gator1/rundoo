@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"app/internal/data"
 )
 
 func HttpHandler() {
@@ -29,7 +31,7 @@ func (sh ProductsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			sh.addProduct(w, r)
 		} else {
 			log.Println("demo for central log service: we don't have a way to go to an indivisual product")
-			sh.getOne(w, r, SKU(sku))
+			sh.getOne(w, r, data.SKU(sku))
 		}
 	
 		
@@ -52,7 +54,7 @@ func (sh ProductsHandler) getAll(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func (sh ProductsHandler) getOne(w http.ResponseWriter, r *http.Request, sku SKU) {
+func (sh ProductsHandler) getOne(w http.ResponseWriter, r *http.Request, sku data.SKU) {
 	productsMutex.Lock()
 	defer productsMutex.Unlock()
 
@@ -91,7 +93,7 @@ func (sh ProductsHandler) addProduct(w http.ResponseWriter, r *http.Request) {
 	productsMutex.Lock()
 	defer productsMutex.Unlock()
 
-	var g Product
+	var g data.Product
 	dec := json.NewDecoder(r.Body)
 	err := dec.Decode(&g)
 	if err != nil {

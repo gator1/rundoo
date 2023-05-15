@@ -1,0 +1,24 @@
+{{define "title"}}Home{{end}}
+
+{{define "main"}}
+  <article>
+    {{if .}}
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Sku</th>
+        </tr>
+        {{range .}}
+        <tr>
+            <td><a href='/product/view?id={{.ID}}'>{{.Name}}</a></td>
+            <td>{{.Category}}</td>
+            <td>{{.Sku}}</td>
+       </tr>
+        {{end}}
+    </table>
+    {{else}}
+    <p>There's nothing to see here yet!</p>
+    {{end}}
+  </article>
+{{end}}

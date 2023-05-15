@@ -19,7 +19,9 @@ func ImportTemplates() error {
     fmt.Println("Current working directory:", cwd)
 
 	rootTemplate, err = template.ParseFiles(
-		"portal/products.gohtml",
+		"ui/html/pages/home.html",
+		"ui/html/partials/nav.html",
+		"ui/html/base.html",
 		"portal/addproduct.gohtml",
 		"portal/productdetails.gohtml")
 
