@@ -29,8 +29,7 @@ func HttpHandler() {
 
 type RundooHandler struct{}
 
-func (sh RundooHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Println("rundooportal productsHandler Request received", r.URL.Path)
+func (sh RundooHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {	log.Println("rundooportal productsHandler Request received", r.URL.Path)
 	pathSegments := strings.Split(r.URL.Path, "/")
 	switch len(pathSegments) {
 	case 2: // /products
@@ -45,6 +44,8 @@ func (sh RundooHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		} else if sku == "SearchProduct" {
 
+		} else if sku == "" {
+			sh.renderProductsGrpc(w, r)
 		} else {
 			sh.renderProduct(w, r, sku)
 		}
@@ -59,7 +60,7 @@ func (RundooHandler) renderProducts(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			log.Println("Error retrieving products: ", err)
+			log.Println("renderProducts: Error retrieving products: ", err)
 		}
 	}()
 
@@ -97,7 +98,7 @@ func (RundooHandler) renderProductsGrpc(w http.ResponseWriter, r *http.Request) 
 	defer func() {
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			log.Println("Error retrieving products: ", err)
+			log.Println("renderProductsGrpc: Error retrieving products: ", err)
 		}
 	}()
 
@@ -135,7 +136,46 @@ func (RundooHandler) renderProductsGrpc(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// rootTemplate.Lookup("products.gohtml").Execute(w, response.Products)
+}
+
+func (RundooHandler) GetProducts() (products []*data.Product, err error) {
+
+	log.Println("RundooHandler GetProducts called!")
+
+	serviceURL, err := registry.GetProvider(registry.RundooService)
+	if err != nil {
+		log.Println("Error getting provider ProductService: ", err)
+		return nil, err
+	}
+	record := strings.Split(serviceURL, ":") // http://localhost:port
+	portInt, _ := strconv.Atoi(record[2])
+	rpcPort := ":" + strconv.Itoa(portInt+1)
+
+	conn, err := grpc.Dial("localhost"+rpcPort, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("failed to dial: %v", err)
+		return nil, err
+	}
+	defer conn.Close()
+
+	client := rundoogrpc.NewProductServiceClient(conn)
+
+	response, err := client.GetProducts(context.Background(), &rundoogrpc.GetProductsRequest{})
+	if err != nil {
+		log.Fatalf("failed to get products: %v", err)
+		return nil, err
+	}
+
+	for _, product := range response.GetProducts() {
+		dataproduct :=  data.Product{
+			ID: product.Id,
+			Name: product.Name,
+			Category: data.CategoryType(product.Category),
+			Sku: data.SKU(product.Sku),
+		}
+		products = append(products, &dataproduct)
+	}
+	return 
 }
 
 
@@ -146,7 +186,7 @@ func (RundooHandler) renderProduct(w http.ResponseWriter, r *http.Request, sku d
 	defer func() {
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			log.Println("Error retrieving products: ", err)
+			log.Println("renderProduct: Error retrieving products: ", err)
 			return
 		}
 	}()
@@ -167,7 +207,7 @@ func (RundooHandler) renderProduct(w http.ResponseWriter, r *http.Request, sku d
 	var s data.Product
 	err = json.NewDecoder(res.Body).Decode(&s)
 	if err != nil {
-		log.Println("Error decodes product : ", string(sku))
+		log.Println("renderProduct: Error decodes product : ", string(sku))
 		return
 	}
 

@@ -30,8 +30,13 @@ func (sh ProductsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if sku == "AddProduct" {
 			sh.addProduct(w, r)
 		} else {
-			log.Println("demo for central log service: we don't have a way to go to an indivisual product")
-			sh.getOne(w, r, data.SKU(sku))
+			if sku == "" {
+				sh.getAll(w, r)
+			} else {
+			
+				log.Printf("demo for central log service: we don't have a way to go to an indivisual product %s", sku)
+				sh.getOne(w, r, data.SKU(sku))
+			}
 		}
 	
 		

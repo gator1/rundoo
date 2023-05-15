@@ -104,8 +104,8 @@ td a {
   text-decoration: none;
 }
 
-/* class selector for book-details */
-.book-details ul {
+/* class selector for product-details */
+.product-details ul {
   list-style-type: none;
 }
 

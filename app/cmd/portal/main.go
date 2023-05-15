@@ -4,42 +4,39 @@ import (
 	"context"
 	"fmt"
 	stlog "log"
-	"net/http"
-
+	
+	"app/internal/models"
 	"app/log"
 	rundooportal "app/portal"
 	"app/registry"
 	"app/service"
 )
 
+type application struct {
+	productlist *models.RundooModel
+	handler *rundooportal.RundooHandler
+
+}
+
 func main() {
 	err := rundooportal.ImportTemplates()
 	if err != nil {
 		stlog.Fatal(err)
 	}
-
 	host, port := "localhost", "5050"
 	serviceAddress := fmt.Sprintf("http://%v:%v", host, port)
 
-	var r registry.ServiceConfig
-	handler := &rundooportal.RundooHandler{}
 
-	r.Name = registry.RundooPortal
+	app := &application{
+		productlist: &models.RundooModel{Endpoint: fmt.Sprintf("%s/products", serviceAddress)},
+	}
+
+
+	var r registry.ServiceConfig
 	r.Host = host
 	r.Port = port
-	r.URL = serviceAddress
-	r.HeartbeatURL = r.URL + "/heartbeat"
-	r.RequiredServices = []registry.ServiceName{
-		registry.LogService,
-		registry.RundooService,
-	}
-	r.UpdateURL = r.URL + "/services"
-	r.HttpHandler = handler
-	r.Mux = http.NewServeMux()
-	r.Mux.Handle("/products", handler)
-	r.Mux.Handle("/products/", handler)
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	r.Mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	
+	app.routes(&r, serviceAddress)
 
 	ctx, err := service.Start(context.Background(), r)
 	if err != nil {
