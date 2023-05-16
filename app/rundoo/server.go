@@ -13,12 +13,6 @@ import (
 	"app/internal/data"
 )
 
-func HttpHandler() {
-	handler := new(ProductsHandler)
-	http.Handle("/products", handler)
-	http.Handle("/products/", handler)
-}
-
 type ProductsHandler struct{}
 
 type Envelope map[string]any

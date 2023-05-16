@@ -55,7 +55,7 @@ func startService(ctx context.Context, config registry.ServiceConfig) context.Co
 
 		con, err := net.Listen("tcp", rpcPort)
 		if err != nil {
-			log.Printf("Starting gRPC user service on %s...\n", con.Addr().String())
+			log.Printf("Starting gRPC user service listen  error on %s...\n", con.Addr().String())
 			panic(err)
 		}
 
@@ -63,7 +63,7 @@ func startService(ctx context.Context, config registry.ServiceConfig) context.Co
 			log.Printf("Starting gRPC user service on %s...\n", con.Addr().String())
 			err = config.GrpcServer.Serve(con)
 			if err != nil {
-				log.Printf("Starting gRPC user service on %s...\n", con.Addr().String())
+				log.Printf("Starting gRPC user service serve error on %s...\n", con.Addr().String())
 				panic(err)
 			}
 			cancel()

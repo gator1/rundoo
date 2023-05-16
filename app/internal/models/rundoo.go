@@ -1,10 +1,16 @@
 package models
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
+	"context"
+	"log"
+	"strconv"
+	"strings"
+
+	"google.golang.org/grpc"
+
+	rundoogrpc "app/api/v1"
+	"app/internal/data"
+	"app/registry"
 )
 
 type Product struct {
@@ -15,7 +21,7 @@ type Product struct {
 }
 
 type ProductResponse struct {
-	Book *Product `json:"product"`
+	Product *Product `json:"product"`
 }
 
 type ProductsResponse struct {
@@ -26,53 +32,77 @@ type RundooModel struct {
 	Endpoint string
 }
 
-func (m *RundooModel) GetAll() (*[]Product, error) {
-	resp, err := http.Get(m.Endpoint)
+func (m *RundooModel) GetAll() (products []data.Product, err error) {
+	log.Println("RundooModel GetAll called!")
+
+	serviceURL, err := registry.GetProvider(registry.RundooService)
 	if err != nil {
+		log.Println("Error getting provider ProductService: ", err)
 		return nil, err
 	}
-	defer resp.Body.Close()
+	record := strings.Split(serviceURL, ":") // http://localhost:port
+	portInt, _ := strconv.Atoi(record[2])
+	rpcPort := ":" + strconv.Itoa(portInt+1)
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status: %s", resp.Status)
-	}
-
-	data, err := io.ReadAll(resp.Body)
+	conn, err := grpc.Dial("localhost"+rpcPort, grpc.WithInsecure())
 	if err != nil {
+		log.Fatalf("failed to dial: %v", err)
+		return nil, err
+	}
+	defer conn.Close()
+
+	client := rundoogrpc.NewProductServiceClient(conn)
+
+	response, err := client.GetProducts(context.Background(), &rundoogrpc.GetProductsRequest{})
+	if err != nil {
+		log.Fatalf("failed to get products: %v", err)
 		return nil, err
 	}
 
-	var productsResp ProductsResponse
-	err = json.Unmarshal(data, &productsResp)
-	if err != nil {
-		return nil, err
+	for _, product := range response.GetProducts() {
+		dataproduct :=  data.Product{
+			ID: product.Id,
+			Name: product.Name,
+			Category: data.CategoryType(product.Category),
+			Sku: data.SKU(product.Sku),
+		}
+		products = append(products, dataproduct)
 	}
-
-	return productsResp.products, nil
+	return 
 }
 
-func (m *RundooModel) Get(id int64) (*Product, error) {
-	url := fmt.Sprintf("%s/%d", m.Endpoint, id)
-	resp, err := http.Get(url)
+func (m *RundooModel) Get(id int64) (product data.Product, err error) {
+	log.Println("RundooModel Get %d called!", id)
+
+	serviceURL, err := registry.GetProvider(registry.RundooService)
 	if err != nil {
-		return nil, err
+		log.Println("Error getting provider ProductService: ", err)
+		return 
 	}
-	defer resp.Body.Close()
+	record := strings.Split(serviceURL, ":") // http://localhost:port
+	portInt, _ := strconv.Atoi(record[2])
+	rpcPort := ":" + strconv.Itoa(portInt+1)
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status: %s", resp.Status)
-	}
-
-	data, err := io.ReadAll(resp.Body)
+	conn, err := grpc.Dial("localhost"+rpcPort, grpc.WithInsecure())
 	if err != nil {
-		return nil, err
+		log.Fatalf("failed to dial: %v", err)
+		return 
 	}
+	defer conn.Close()
 
-	var productResp ProductResponse
-	err = json.Unmarshal(data, &productResp)
+	client := rundoogrpc.NewProductServiceClient(conn)
+
+	response, err := client.GetProduct(context.Background(), &rundoogrpc.GetProductRequest{Id: id})
 	if err != nil {
-		return nil, err
+		log.Fatalf("failed to get product %v: %v", id, err)
+		return 
 	}
 
-	return productResp.Book, nil
+	gproduct := response.GetProduct()
+
+	product.ID =  gproduct.Id
+	product.Name =  gproduct.Name
+	product.Category =  data.CategoryType(gproduct.Category)
+	product.Sku =  data.SKU(product.Sku)
+	return 
 }

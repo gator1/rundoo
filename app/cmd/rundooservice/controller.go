@@ -28,6 +28,7 @@ func (ctlr *productsServiceController) GetProducts(ctx context.Context, req *run
 
 	resultMap, err := ctlr.productsInterface.GetProducts()
 	if err != nil {
+		log.Printf("productsServiceController GetProducts failed %v", err)
 		return
 	}
 
@@ -38,6 +39,23 @@ func (ctlr *productsServiceController) GetProducts(ctx context.Context, req *run
 	log.Printf("Grpc handled GetProducts")
 	return
 }
+
+// GetProducts calls the product service's GetProducts method and maps the result to a grpc service response.
+func (ctlr *productsServiceController) GetProduct(ctx context.Context, req *rundoogrpc.GetProductRequest) (resp *rundoogrpc.GetProductResponse, err error) {
+
+	result, err := ctlr.productsInterface.GetProduct(req.Id)
+	if err != nil {
+		log.Printf("productsServiceController GetProduct failed %v", err)
+		
+		return
+	}
+
+	resp = &rundoogrpc.GetProductResponse{}
+	resp.Product = marshalProduct(&result)
+	log.Printf("Grpc handled GetProduct")
+	return
+}
+
 
 // marshalProductmarshals a business object Product into a gRPC layer Product.
 func marshalProduct(p *data.Product) *rundoogrpc.Product {

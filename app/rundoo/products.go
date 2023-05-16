@@ -18,7 +18,6 @@ const (
 
 
 type ProductService struct {
-	// a database dependency would go here but instead we're going to have a static map
 	products data.Products
 	models *data.Models
     Categories map[CategoryType]bool
@@ -27,6 +26,7 @@ type ProductService struct {
 
 type ServiceInterface interface {
 	GetProducts() (data.Products, error)
+	GetProduct(id int64) (data.Product, error)
 	SearchProducts(filters []rundoogrpc.Filter) (data.Products, error)
 	AddProduct(product data.Product) (bool, error)
 }
@@ -74,6 +74,21 @@ func (s *ProductService) GetProducts() (result data.Products, err error) {
 	}
 	return 
 }
+
+func (s *ProductService) GetProduct(id int64) (result data.Product, err error) {
+	product, err := s.models.Products.Get(id)
+	if err != nil {
+		log.Printf("ProductService, GetProduct %d %v", id, err)
+		return
+	}
+	result.ID = product.ID
+	result.Name = product.Name
+	result.Category = data.CategoryType(product.Category)
+	result.Sku =  data.SKU(product.Sku)
+
+	return 
+}
+
 
 
 func (p *ProductService) SearchProducts(filters []rundoogrpc.Filter) (data.Products, error) {

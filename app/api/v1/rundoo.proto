@@ -6,6 +6,7 @@ option go_package = "./";
 
 service ProductService {
   rpc GetProducts (GetProductsRequest) returns (GetProductsResponse) {}
+  rpc GetProduct (GetProductRequest) returns (GetProductResponse) {}
   rpc SearchProducts (SearchProductsRequest) returns (SearchProductsResponse) {}
   rpc AddProduct (AddProductRequest) returns (AddProductResponse) {}
 }
@@ -23,6 +24,14 @@ message GetProductsRequest {
   
 message GetProductsResponse {
   repeated Product products = 1; 
+}
+
+message GetProductRequest {
+     int64 id = 1;
+}
+  
+message GetProductResponse {
+  Product product = 1; 
 }
 
 message SearchProductsRequest {
