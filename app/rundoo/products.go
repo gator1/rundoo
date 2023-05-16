@@ -1,6 +1,7 @@
 package rundoo
 
 import (
+	"log"
 	"sync"
 
 	rundoogrpc "app/api/v1"
@@ -19,6 +20,7 @@ const (
 type ProductService struct {
 	// a database dependency would go here but instead we're going to have a static map
 	products data.Products
+	models *data.Models
     Categories map[CategoryType]bool
     productsMutex sync.Mutex
 }
@@ -31,9 +33,10 @@ type ServiceInterface interface {
 
 
 // NewService instantiates a new Service.
-func NewService( /* a database connection would be injected here */ ) ServiceInterface {
+func NewService( models *data.Models) ServiceInterface {
 	return &ProductService{
 		products: *new(data.Products),
+		models: models,
 		Categories: map[CategoryType]bool{
 			CategoryWine: true,
         	CategoryBook: true,
@@ -55,8 +58,22 @@ var (
 
 func (s *ProductService) GetProducts() (result data.Products, err error) {
 	// instead of querying a database, we just query our static map
-	
-	return products, nil
+	products, err := s.models.Products.GetAll()
+	if err != nil {
+		log.Printf("ProductService, GetProducts %v", err)
+		return
+	}
+	for _, mproduct := range products {
+		result = append(result, data.Product{
+			ID: mproduct.ID,
+			Name:  mproduct.Name,
+			Category:  data.CategoryType(mproduct.Category),
+			Sku:  data.SKU(mproduct.Sku),
+
+		})
+
+	}
+	return 
 }
 
 

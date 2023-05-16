@@ -25,6 +25,7 @@ func NewProductsServiceController(productInterface rundoo.ServiceInterface) rund
 
 // GetProducts calls the product service's GetProducts method and maps the result to a grpc service response.
 func (ctlr *productsServiceController) GetProducts(ctx context.Context, req *rundoogrpc.GetProductsRequest) (resp *rundoogrpc.GetProductsResponse, err error) {
+
 	resultMap, err := ctlr.productsInterface.GetProducts()
 	if err != nil {
 		return
@@ -34,7 +35,6 @@ func (ctlr *productsServiceController) GetProducts(ctx context.Context, req *run
 	for _, u := range resultMap {
 		resp.Products = append(resp.Products, marshalProduct(&u))
 	}
-
 	log.Printf("Grpc handled GetProducts")
 	return
 }

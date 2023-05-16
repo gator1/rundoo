@@ -3,19 +3,24 @@ package main
 import (
 	
 	"context"
+	"database/sql"
 	"fmt"
 	stlog "log"
-	"net/http"
+	
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
+	_ "github.com/lib/pq"
 
-	rundoogrpc "app/api/v1"
+	"app/internal/data"
 	"app/log"
 	"app/rundoo"
 	"app/registry"
 	"app/service"
 )
+
+type application struct {
+	models data.Models
+	handler *rundoo.ProductsHandler
+}
 
 func main() {
 	host, port := "localhost", "6000"
@@ -23,36 +28,36 @@ func main() {
 
 	var r registry.ServiceConfig
 
-	// configure our service
-	productService := rundoo.NewService()
+	
+	dsn := "postgres://postgres:mysecretpassword@localhost/rundoo?sslmode=disable"
+	
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		stlog.Fatal(err)
+	}
 
+	defer db.Close()
 
-	handler := &rundoo.ProductsHandler{}
-	r.Name = registry.RundooService
+	err = db.Ping()
+	if err != nil {
+		stlog.Fatal(err)
+	}
+
+	stlog.Printf("database connection pool established")
+
 	r.Host = host
 	r.Port = port
-	r.URL = serviceAddress
-	r.HeartbeatURL = r.URL + "/heartbeat"
-	r.RequiredServices = []registry.ServiceName{
-		registry.LogService,
-	}
-	r.UpdateURL = r.URL + "/services"
-	r.HttpHandler = handler
-
-	r.HttpHandler = handler
-	r.Mux = http.NewServeMux()
-	r.Mux.Handle("/products", handler)
-	r.Mux.Handle("/products/", handler)
-
 	
-	// configure our gRPC service controller
-	productServiceController := NewProductsServiceController(productService)
+	app := &application{
+		models: data.NewModels(db),
+		handler: &rundoo.ProductsHandler{},	
+	}
+	// configure our service
+	productService := rundoo.NewService(&app.models)
 
-	// start a gRPC server
-	server := grpc.NewServer()
-	rundoogrpc.RegisterProductServiceServer(server, productServiceController)
-	reflection.Register(server)
-	r.GrpcServer = server
+
+	app.routes(&r, serviceAddress, productService)
+
 
 	ctx, err := service.Start(context.Background(), r)
 	if err != nil {

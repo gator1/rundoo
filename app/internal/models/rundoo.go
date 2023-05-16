@@ -8,10 +8,10 @@ import (
 )
 
 type Product struct {
-	ID        int64    `json:"id"`
+	ID       int64    `json:"id"`
 	Name     string   `json:"name"`
-	Category int      `json:"category"`
-	Sku      int      `json:"sku"`
+	Category string   `json:"category"`
+	Sku      string   `json:"sku"`
 }
 
 type ProductResponse struct {

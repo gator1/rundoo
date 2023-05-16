@@ -8,19 +8,13 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	
 
 	"app/internal/data"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
-	/*
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}*/
-
-	//products, err := app.productlist.GetAll()
 	products, err := app.handler.GetProducts()
 	
 	if err != nil {
@@ -56,7 +50,7 @@ func (app *application) productView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	book, err := app.productlist.Get(int64(id))
+	product, err := app.productlist.Get(int64(id))
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -78,7 +72,7 @@ func (app *application) productView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ts.ExecuteTemplate(w, "base", book)
+	err = ts.ExecuteTemplate(w, "base", product)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)

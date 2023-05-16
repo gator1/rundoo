@@ -21,8 +21,6 @@ func (app *application) routes(r *registry.ServiceConfig, serviceAddress string)
 	r.HttpHandler = handler
 
 	r.Mux = http.NewServeMux()
-	//r.Mux.Handle("/products", handler)
-	//r.Mux.Handle("/products/", handler)
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	r.Mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
