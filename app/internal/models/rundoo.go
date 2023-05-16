@@ -103,6 +103,6 @@ func (m *RundooModel) Get(id int64) (product data.Product, err error) {
 	product.ID =  gproduct.Id
 	product.Name =  gproduct.Name
 	product.Category =  data.CategoryType(gproduct.Category)
-	product.Sku =  data.SKU(product.Sku)
+	product.Sku =  data.SKU(gproduct.Sku)
 	return 
 }
