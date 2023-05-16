@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
@@ -67,7 +65,7 @@ func (app *application) productView(w http.ResponseWriter, r *http.Request) {
 	// Used to convert comma-separated genres to a slice within the template.
 	funcs := template.FuncMap{"join": strings.Join}
 
-	ts, err := template.New("showBook").Funcs(funcs).ParseFiles(files...)
+	ts, err := template.New("showProduct").Funcs(funcs).ParseFiles(files...)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
@@ -134,32 +132,12 @@ func (app *application) productCreateProcess(w http.ResponseWriter, r *http.Requ
 		Sku: data.SKU(sku),
 	}
 
-	data, err := json.Marshal(product)
+	err = app.productlist.AddProduct(&product)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
-	req, err := http.NewRequest("POST", app.productlist.Endpoint, bytes.NewBuffer(data))
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusCreated {
-		log.Printf("unexpected status: %s", resp.Status)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+	
 }

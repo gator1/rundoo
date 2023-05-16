@@ -106,3 +106,41 @@ func (m *RundooModel) Get(id int64) (product data.Product, err error) {
 	product.Sku =  data.SKU(gproduct.Sku)
 	return 
 }
+
+func (m *RundooModel) AddProduct(product *data.Product) (err error) {
+	log.Println("RundooModel AddProduct called!")
+
+	serviceURL, err := registry.GetProvider(registry.RundooService)
+	if err != nil {
+		log.Println("Error getting provider ProductService: ", err)
+		return 
+	}
+	record := strings.Split(serviceURL, ":") // http://localhost:port
+	portInt, _ := strconv.Atoi(record[2])
+	rpcPort := ":" + strconv.Itoa(portInt+1)
+
+	conn, err := grpc.Dial("localhost"+rpcPort, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("failed to dial: %v", err)
+		return 
+	}
+	defer conn.Close()
+
+	client := rundoogrpc.NewProductServiceClient(conn)
+
+	gProduct := rundoogrpc.Product{
+		Name: product.Name,
+		Category: string(product.Category),
+		Sku: string(product.Sku),
+	}
+
+	_, err = client.AddProduct(context.Background(), &rundoogrpc.AddProductRequest{Product: &gProduct})
+	if err != nil {
+		log.Fatalf("failed to add product: %v", err)
+		return 
+	}
+
+	
+	return 
+}
+

@@ -146,9 +146,12 @@ func (s *ProductService) SearchProducts(ctx context.Context, req *rundoogrpc.Sea
 }
 */
 
-func (s *ProductService) AddProduct(product data.Product) (bool,error) {
-	// Instead of using a database, we just add the product to our static map.
-
+func (s *ProductService) AddProduct(product data.Product) (result bool, err error) {
+    err = s.models.Products.Insert(&product)
+	if err != nil {
+		log.Printf("ProductService, AddProduct %v", err)
+		return
+	}
 
 	return true, nil
 }
