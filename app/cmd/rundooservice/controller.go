@@ -41,5 +41,5 @@ func (ctlr *productsServiceController) GetProducts(ctx context.Context, req *run
 
 // marshalProductmarshals a business object Product into a gRPC layer Product.
 func marshalProduct(p *data.Product) *rundoogrpc.Product {
-	return &rundoogrpc.Product{Sku: string(p.Sku), Category: string(p.Category), Name: p.Name}
+	return &rundoogrpc.Product{Id: p.ID, Name: p.Name, Category: string(p.Category), Sku: string(p.Sku)}
 }

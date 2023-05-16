@@ -57,7 +57,6 @@ var (
 )
 
 func (s *ProductService) GetProducts() (result data.Products, err error) {
-	// instead of querying a database, we just query our static map
 	products, err := s.models.Products.GetAll()
 	if err != nil {
 		log.Printf("ProductService, GetProducts %v", err)

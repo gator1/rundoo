@@ -41,6 +41,8 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", 500)
 		return
 	}
+
+
 }
 
 func (app *application) productView(w http.ResponseWriter, r *http.Request) {
