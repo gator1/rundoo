@@ -6,55 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	
-
-	"app/internal/data"
 )
 
 type ProductsHandler struct{}
 
 type Envelope map[string]any
 
-
-
-func (sh ProductsHandler) getAll(w http.ResponseWriter, r *http.Request) {
-	productsMutex.Lock()
-	defer productsMutex.Unlock()
-
-	data, err := sh.ToJSON(products)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println(err)
-		return
-	}
-	w.Header().Add("content-type", "application/json")
-	w.Write(data)
-}
-
-func (sh ProductsHandler) getOne(w http.ResponseWriter, r *http.Request, sku data.SKU) {
-	productsMutex.Lock()
-	defer productsMutex.Unlock()
-
-	product, err := products.GetBySKU(sku)
-	if err != nil {
-		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
-			log.Println(err)
-			return
-		}
-	}
-
-	data, err := sh.ToJSON(product)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println(fmt.Errorf("Failed to serialize products: %q", err))
-		return
-	}
-	w.Header().Add("content-type", "application/json")
-	w.Write(data)
-}
 
 func (ProductsHandler) ToJSON(obj interface{}) ([]byte, error) {
 	var b bytes.Buffer
@@ -107,29 +66,3 @@ func (ProductsHandler) ReadJSON(w http.ResponseWriter, r *http.Request, dst any)
 
 	return nil
 }
-
-
-
-func (sh ProductsHandler) addProduct(w http.ResponseWriter, r *http.Request) {
-	productsMutex.Lock()
-	defer productsMutex.Unlock()
-
-	var g data.Product
-	dec := json.NewDecoder(r.Body)
-	err := dec.Decode(&g)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Println(err)
-		return
-	}
-	products = append(products, g)
-
-	w.WriteHeader(http.StatusCreated)
-	data, err := sh.ToJSON(g)
-	if err != nil {
-		log.Println(err)
-	}
-	w.Header().Add("content-type", "application/json")
-	w.Write(data)
-}
-
