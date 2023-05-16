@@ -8,7 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strings"
+	
 
 	"app/internal/data"
 )
@@ -17,32 +17,7 @@ type ProductsHandler struct{}
 
 type Envelope map[string]any
 
-func (sh ProductsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	pathSegments := strings.Split(r.URL.Path, "/")
-	switch len(pathSegments) {
-	case 2: // /products
-		sh.getAll(w, r)
-	
-	case 3: // /products/{:sku}
-		sku := pathSegments[2]
-		if sku == "AddProduct" {
-			sh.addProduct(w, r)
-		} else {
-			if sku == "" {
-				sh.getAll(w, r)
-			} else {
 
-			
-			log.Printf("demo for central log service: we don't have a way to go to an indivisual product %s", sku)
-			sh.getOne(w, r, data.SKU(sku))
-		}
-		}
-	
-		
-	default:
-		w.WriteHeader(http.StatusNotFound)
-	}
-}
 
 func (sh ProductsHandler) getAll(w http.ResponseWriter, r *http.Request) {
 	productsMutex.Lock()
