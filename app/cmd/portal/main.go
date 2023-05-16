@@ -14,7 +14,6 @@ import (
 
 type application struct {
 	productlist *models.RundooModel
-	handler *rundooportal.RundooHandler
 }
 
 func main() {

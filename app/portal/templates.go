@@ -22,8 +22,7 @@ func ImportTemplates() error {
 		"ui/html/pages/home.html",
 		"ui/html/partials/nav.html",
 		"ui/html/base.html",
-		"portal/addproduct.gohtml",
-		"portal/productdetails.gohtml")
+	)
 
 	if err != nil {
 		return err

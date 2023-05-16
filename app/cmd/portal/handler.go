@@ -13,7 +13,7 @@ import (
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
-	products, err := app.handler.GetProducts()
+	products, err := app.productlist.GetAll()
 	
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
