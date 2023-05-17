@@ -92,6 +92,20 @@ func (app *application) productCreate(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *application) productsSearch(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		app.productsSearchForm(w, r)
+	case http.MethodPost:
+		app.productsSearchProcess(w, r)
+	default:
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+}
+
+
+
 func (app *application) productCreateForm(w http.ResponseWriter, r *http.Request) {
 	files := []string{
 		"./ui/html/base.html",
@@ -114,6 +128,57 @@ func (app *application) productCreateForm(w http.ResponseWriter, r *http.Request
 }
 
 func (app *application) productCreateProcess(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	name := r.PostForm.Get("name")
+
+	category := r.PostForm.Get("category") 
+	sku := r.PostForm.Get("sku") 
+	
+	product := data.Product {
+		Name:     name,
+		Category:     data.CategoryType(category),
+		Sku: data.SKU(sku),
+	}
+
+	err = app.productlist.AddProduct(&product)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+	
+}
+
+
+func (app *application) productsSearchForm(w http.ResponseWriter, r *http.Request) {
+	files := []string{
+		"./ui/html/base.html",
+		"./ui/html/partials/nav.html",
+		"./ui/html/pages/search.html",
+	}
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+	err = ts.ExecuteTemplate(w, "base", nil)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+}
+
+func (app *application) productsSearchProcess(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		log.Println(err)

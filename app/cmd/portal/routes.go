@@ -23,6 +23,7 @@ func (app *application) routes(r *registry.ServiceConfig, serviceAddress string)
 	r.Mux.HandleFunc("/", app.home)
 	r.Mux.HandleFunc("/product/view/", app.productView)
 	r.Mux.HandleFunc("/product/create", app.productCreate)
+	r.Mux.HandleFunc("/products/search", app.productsSearch)
 
 	return r.Mux
 }

@@ -1,0 +1,22 @@
+{{define "title"}}Create a New Product Entry{{end}}
+
+{{define "main"}}
+<form action='/products/search' method='Post'>
+  <input type="text" name="q" placeholder="Search Rundoo" required>
+    <tr>
+      <td>Type</td>
+      <td>
+          <select name="Type" id="Type">
+              <option value="Any">Any</option>
+              <option value="Name">Name</option>
+              <option value="Category">Category</option>
+              <option value="Sku">SKU</option>
+          </select>
+      </td>
+    </tr>
+    <div class="button-center">
+      <button type="submit">Submit</button>
+    </div>
+  
+</form>
+{{end}}
