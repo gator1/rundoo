@@ -46,15 +46,6 @@ func NewService( models *data.Models) ServiceInterface {
 	}
 }
 
-var (
-    products data.Products
-    Categories = map[CategoryType]bool{
-        CategoryWine: true,
-        CategoryBook: true,
-        CategoryTool: true,
-    }
-    productsMutex sync.Mutex
-)
 
 func (s *ProductService) GetProducts() (result data.Products, err error) {
 	products, err := s.models.Products.GetAll()
