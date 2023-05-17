@@ -106,46 +106,6 @@ func (p *ProductService) SearchProducts(filters []rundoogrpc.Filter) (data.Produ
 	return filteredProducts, nil
 }
 
-
-
-/*
-func (s *ProductService) SearchProducts(ctx context.Context, req *rundoogrpc.SearchProductsRequest) (*rundoogrpc.SearchProductsResponse, error) {
-	// instead of querying a database, we just query our static map
-
-	var matchedProducts Products
-	for _, filter := range req.GetFilters() {
-		switch filter.GetField() {
-		case "name":
-			for _, product := range s.products {
-				if product.Name == filter.GetValue() {
-					matchedProducts = append(matchedProducts, product)
-				}
-			}
-		case "category":
-			for _, product := range s.products {
-				if product.Category == CategoryType(filter.GetValue()) {
-					matchedProducts = append(matchedProducts, product)
-				}
-			}
-		case "sku":
-			sku, err := NewSKU(filter.GetValue())
-			if err != nil {
-				return nil, err
-			}
-			product, err := s.products.GetBySKU(sku)
-			if err != nil {
-				return nil, err
-			}
-			matchedProducts = append(matchedProducts, *product)
-		}
-	}
-
-	return &rundoogrpc.SearchProductsResponse{
-		Products: matchedProducts.toProto(),
-	}, nil
-}
-*/
-
 func (s *ProductService) AddProduct(product data.Product) (result bool, err error) {
     err = s.models.Products.Insert(&product)
 	if err != nil {

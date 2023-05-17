@@ -7,7 +7,7 @@ import (
 	"strings"
 	"text/template"
 	
-
+	rundoogrpc "app/api/v1"
 	"app/internal/data"
 )
 
@@ -186,20 +186,33 @@ func (app *application) productsSearchProcess(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	name := r.PostForm.Get("name")
-
-	category := r.PostForm.Get("category") 
-	sku := r.PostForm.Get("sku") 
+	searchQuery := r.PostForm.Get("q")
+	filterType := r.PostForm.Get("Type")
 	
-	product := data.Product {
-		Name:     name,
-		Category:     data.CategoryType(category),
-		Sku: data.SKU(sku),
-	}
-
-	err = app.productlist.AddProduct(&product)
+	filters := []rundoogrpc.Filter{{Field: searchQuery, Value:filterType}}
+	
+	products, err := app.productlist.SearchProducts(filters)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	files := []string{
+		"./ui/html/base.html",
+		"./ui/html/partials/nav.html",
+		"./ui/html/pages/home.html",
+	}
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	err = ts.ExecuteTemplate(w, "base", products)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal server error", 500)
 		return
 	}
 

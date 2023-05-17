@@ -35,19 +35,11 @@ type RundooModel struct {
 func (m *RundooModel) GetAll() (products []data.Product, err error) {
 	log.Println("RundooModel GetAll called!")
 
-	serviceURL, err := registry.GetProvider(registry.RundooService)
-	if err != nil {
-		log.Println("Error getting provider ProductService: ", err)
-		return nil, err
-	}
-	record := strings.Split(serviceURL, ":") // http://localhost:port
-	portInt, _ := strconv.Atoi(record[2])
-	rpcPort := ":" + strconv.Itoa(portInt+1)
-
-	conn, err := grpc.Dial("localhost"+rpcPort, grpc.WithInsecure())
+	
+	conn, err := dialGrpc()
 	if err != nil {
 		log.Fatalf("failed to dial: %v", err)
-		return nil, err
+		return 
 	}
 	defer conn.Close()
 
@@ -74,16 +66,7 @@ func (m *RundooModel) GetAll() (products []data.Product, err error) {
 func (m *RundooModel) Get(id int64) (product data.Product, err error) {
 	log.Println("RundooModel Get %d called!", id)
 
-	serviceURL, err := registry.GetProvider(registry.RundooService)
-	if err != nil {
-		log.Println("Error getting provider ProductService: ", err)
-		return 
-	}
-	record := strings.Split(serviceURL, ":") // http://localhost:port
-	portInt, _ := strconv.Atoi(record[2])
-	rpcPort := ":" + strconv.Itoa(portInt+1)
-
-	conn, err := grpc.Dial("localhost"+rpcPort, grpc.WithInsecure())
+	conn, err := dialGrpc()
 	if err != nil {
 		log.Fatalf("failed to dial: %v", err)
 		return 
@@ -110,16 +93,7 @@ func (m *RundooModel) Get(id int64) (product data.Product, err error) {
 func (m *RundooModel) AddProduct(product *data.Product) (err error) {
 	log.Println("RundooModel AddProduct called!")
 
-	serviceURL, err := registry.GetProvider(registry.RundooService)
-	if err != nil {
-		log.Println("Error getting provider ProductService: ", err)
-		return 
-	}
-	record := strings.Split(serviceURL, ":") // http://localhost:port
-	portInt, _ := strconv.Atoi(record[2])
-	rpcPort := ":" + strconv.Itoa(portInt+1)
-
-	conn, err := grpc.Dial("localhost"+rpcPort, grpc.WithInsecure())
+	conn, err := dialGrpc()
 	if err != nil {
 		log.Fatalf("failed to dial: %v", err)
 		return 
@@ -143,4 +117,61 @@ func (m *RundooModel) AddProduct(product *data.Product) (err error) {
 	
 	return 
 }
+
+func (m *RundooModel) SearchProducts(filters []rundoogrpc.Filter) (products []data.Product, err error) {
+	log.Println("RundooModel SearchProducts called!")
+
+	
+	conn, err := dialGrpc()
+	if err != nil {
+		log.Fatalf("failed to dial: %v", err)
+		return 
+	}
+
+	client := rundoogrpc.NewProductServiceClient(conn)	
+	
+	// Create the search request
+	filtersp := make([]*rundoogrpc.Filter, len(filters))
+	for i, filter := range filters {
+		filtersp[i] = &filter
+	}
+
+	request := &rundoogrpc.SearchProductsRequest{Filters: filtersp}
+
+	// Invoke the gRPC method
+	response, err := client.SearchProducts(context.Background(), request)
+	if err != nil {
+		log.Fatalf("SearchProducts failed: %v", err)
+	}
+
+	for _, product := range response.GetProducts() {
+		dataproduct :=  data.Product{
+			ID: product.Id,
+			Name: product.Name,
+			Category: data.CategoryType(product.Category),
+			Sku: data.SKU(product.Sku),
+		}
+		products = append(products, dataproduct)
+	}
+	return 
+}
+
+func dialGrpc() (conn *grpc.ClientConn, err error) {
+	serviceURL, err := registry.GetProvider(registry.RundooService)
+	if err != nil {
+		log.Println("Error getting provider ProductService: ", err)
+		return 
+	}
+	record := strings.Split(serviceURL, ":") // http://localhost:port
+	portInt, _ := strconv.Atoi(record[2])
+	rpcPort := ":" + strconv.Itoa(portInt+1)
+
+	conn, err = grpc.Dial("localhost"+rpcPort, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("failed to dial: %v", err)
+		return 
+	}
+	return
+}
+
 

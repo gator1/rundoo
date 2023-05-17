@@ -7,7 +7,6 @@ import (
 	
 	"app/internal/models"
 	"app/log"
-	rundooportal "app/portal"
 	"app/registry"
 	"app/service"
 )
@@ -17,10 +16,7 @@ type application struct {
 }
 
 func main() {
-	err := rundooportal.ImportTemplates()
-	if err != nil {
-		stlog.Fatal(err)
-	}
+	
 	host, port := "localhost", "5050"
 	serviceAddress := fmt.Sprintf("http://%v:%v", host, port)
 

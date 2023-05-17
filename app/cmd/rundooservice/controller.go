@@ -26,21 +26,21 @@ func NewProductsServiceController(productInterface rundoo.ServiceInterface) rund
 // GetProducts calls the product service's GetProducts method and maps the result to a grpc service response.
 func (ctlr *productsServiceController) GetProducts(ctx context.Context, req *rundoogrpc.GetProductsRequest) (resp *rundoogrpc.GetProductsResponse, err error) {
 
-	resultMap, err := ctlr.productsInterface.GetProducts()
+	result, err := ctlr.productsInterface.GetProducts()
 	if err != nil {
 		log.Printf("productsServiceController GetProducts failed %v", err)
 		return
 	}
 
 	resp = &rundoogrpc.GetProductsResponse{}
-	for _, u := range resultMap {
+	for _, u := range result {
 		resp.Products = append(resp.Products, marshalProduct(&u))
 	}
 	log.Printf("Grpc handled GetProducts")
 	return
 }
 
-// GetProducts calls the product service's GetProduct method and maps the result to a grpc service response.
+// GetProduct calls the product service's GetProduct method and maps the result to a grpc service response.
 func (ctlr *productsServiceController) GetProduct(ctx context.Context, req *rundoogrpc.GetProductRequest) (resp *rundoogrpc.GetProductResponse, err error) {
 
 	result, err := ctlr.productsInterface.GetProduct(req.Id)
@@ -74,6 +74,31 @@ func (ctlr *productsServiceController) AddProduct(ctx context.Context, req *rund
 	resp = &rundoogrpc.AddProductResponse{}
 	resp.Ok = result
 	log.Printf("Grpc handled AddProduct")
+	return
+}
+
+// SearchProducts calls the product service's SearchProducts method and maps the result to a grpc service response.
+func (ctlr *productsServiceController) SearchProducts(ctx context.Context, req *rundoogrpc.SearchProductsRequest) (resp *rundoogrpc.SearchProductsResponse, err error) {
+
+	// Create the search request
+	filtersv := make([]rundoogrpc.Filter, len(req.Filters))
+	for i, filter := range req.Filters {
+		filtersv[i] = *filter
+	}
+
+	result, err := ctlr.productsInterface.SearchProducts(filtersv)
+	if err != nil {
+		log.Printf("productsServiceController SearchProducts failed %v", err)
+		
+		return
+	}
+
+	resp = &rundoogrpc.SearchProductsResponse{}
+	for _, u := range result {
+		resp.Products = append(resp.Products, marshalProduct(&u))
+	}
+
+	log.Printf("Grpc handled SearchProducts")
 	return
 }
 
