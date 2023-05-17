@@ -175,6 +175,49 @@ func (b ProductModel) GetAll() ([]*Product, error) {
 	return products, nil
 }
 
+func (b ProductModel) SearchProducts(filters []rundoogrpc.Filter) ([]*Product, error) {
+	// Perform the search query
+	query := `
+	SELECT * FROM Products
+	WHERE name ILIKE $1 OR category ILIKE $1 OR sku ILIKE $1
+`
+
+	rows, err := b.DB.Query(query, filters[0].Value)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+
+
+	products := []*Product{}
+
+	for rows.Next() {
+		var product Product
+
+		err := rows.Scan(
+			&product.ID,
+			&product.CreatedAt,
+			&product.Name,
+			&product.Category,
+			&product.Sku,
+			&product.Version,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		products = append(products, &product)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}
+
+
 func (p Product) MatchFilters(filters []rundoogrpc.Filter) bool {
 	// Apply the filters to the product and determine if it matches
 	// Return true if the product matches all filters, false otherwise

@@ -91,19 +91,26 @@ func (s *ProductService) GetProduct(id int64) (result data.Product, err error) {
 
 
 
-func (p *ProductService) SearchProducts(filters []rundoogrpc.Filter) (data.Products, error) {
+func (s *ProductService) SearchProducts(filters []rundoogrpc.Filter) (products data.Products, err error) {
+	
+	rundooproducts, err := s.models.Products.SearchProducts(filters)
+	if err != nil {
+		log.Printf("ProductService, SearchProducts %v", err)
+		return
+	}
+	
 	// Create a new Products slice to store filtered products
 	filteredProducts := make(data.Products, 0)
 
 	// Loop over the p.Products slice and apply filters
-	for _, product := range p.products {
-		if product.MatchFilters(filters) {
-			filteredProducts = append(filteredProducts, product)
-		}
+	for _, product := range rundooproducts {
+		filteredProducts = append(filteredProducts, *product)
+		
 	}
 
 	// Return the filtered products slice and any error that may have occurred
 	return filteredProducts, nil
+	
 }
 
 func (s *ProductService) AddProduct(product data.Product) (result bool, err error) {

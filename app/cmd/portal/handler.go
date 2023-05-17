@@ -189,7 +189,7 @@ func (app *application) productsSearchProcess(w http.ResponseWriter, r *http.Req
 	searchQuery := r.PostForm.Get("q")
 	filterType := r.PostForm.Get("Type")
 	
-	filters := []rundoogrpc.Filter{{Field: searchQuery, Value:filterType}}
+	filters := []rundoogrpc.Filter{{Field: filterType, Value: searchQuery}}
 	
 	products, err := app.productlist.SearchProducts(filters)
 	if err != nil {
