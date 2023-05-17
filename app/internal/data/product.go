@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	
+	"strings"	
 	"time"
 
 	_ "github.com/lib/pq"
@@ -182,13 +182,78 @@ func (b ProductModel) SearchProducts(filters []rundoogrpc.Filter) ([]*Product, e
 	WHERE name ILIKE $1 OR category ILIKE $1 OR sku ILIKE $1
 `
 
-	rows, err := b.DB.Query(query, filters[0].Value)
+    // Define the search parameters
+	searchString := "%search_string%"
+	includeName := false
+	includeCategory := false
+	includeSKU := false
+
+	for _, filter := range filters {
+		if filter.Field == "Any" {
+			includeName = true
+			includeCategory = true
+			includeSKU = true
+			searchString = filter.Value
+			break
+		}
+		if filter.Field == "Name" {
+			includeName = true
+			searchString = filter.Value
+		}
+		if filter.Field == "Category" {
+			includeCategory = true
+			searchString = filter.Value
+		}
+		if filter.Field == "Sku" {
+			includeSKU = true
+			searchString = filter.Value
+		}
+
+	}
+
+	
+	// Construct the search query dynamically
+	queryBuilder := strings.Builder{}
+	queryBuilder.WriteString("SELECT * FROM Products WHERE ")
+
+	params := make([]interface{}, 0)
+	paramIndex := 1
+
+	if includeName {
+		queryBuilder.WriteString(fmt.Sprintf("name ILIKE $%d", paramIndex))
+		params = append(params, searchString)
+		paramIndex++
+	}
+
+	if includeCategory {
+		if includeName {
+			queryBuilder.WriteString(" OR ")
+		}
+		queryBuilder.WriteString(fmt.Sprintf("category ILIKE $%d", paramIndex))
+		params = append(params, searchString)
+		paramIndex++
+	}
+
+	if includeSKU {
+		if includeName || includeCategory {
+			queryBuilder.WriteString(" OR ")
+		}
+		queryBuilder.WriteString(fmt.Sprintf("sku ILIKE $%d", paramIndex))
+		params = append(params, searchString)
+		paramIndex++
+	}
+
+	query = queryBuilder.String()
+
+
+	// Perform the search query
+	rows, err := b.DB.Query(query, params...)
 	if err != nil {
 		panic(err)
 	}
 	defer rows.Close()
 
-
+	// Iterate over the query results
 
 	products := []*Product{}
 
