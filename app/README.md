@@ -77,7 +77,7 @@ There is a sql script in the codebase called setup.sql. It doesn't seem to work 
 cd ~/HOME/your path/app
 psql -h localhost -p 5432  -U postgres -d rundoo -f setup.sql
 ```
-You can also fill in some entries for the database with mock datain mockdata.sql. 
+You can also fill in some entries for the database with mock data in mockdata.sql. 
 ```sh
 psql -h localhost -p 5432  -U postgres -d rundoo -f mockdata.sql
 ```
@@ -124,7 +124,7 @@ Registry service receives each service registration, a service endpoints are rec
 There are four services:
 Registry: service registration and health monitoring. 
 Log service: Centralized logging. 
-Rundoo Service: Business logic and data persistence
+Rundoo Service: Business logic and data persistence.
 Portal: Web application and API gateway. 
 
 ## Testing
@@ -142,7 +142,7 @@ Set up the required infrastructure (servers, load balancers, etc.) based on the 
 Clone the Rundoo repository:
 
 ```sh
-your repo
+git clone your repo
 ```
 Build the necessary binaries:
 
