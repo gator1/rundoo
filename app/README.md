@@ -9,27 +9,27 @@ A fully working distributed system for Rundoo products.
 
 # Rundoo
 
-It's a distributed system that a registry service, a log service, rundoo service(business logic), and a web portal. 
+It's a distributed system that has a registry service, a log service, rundoo service(business logic), and a web portal. 
 
 The code is developed in Go; there is no Javascript even for front end. 
 The service uses Go httpserver. For a real application one probabaly should consider
 some framework such as Gin or Uber fiber. 
 
-The web portal and rundoo service commuinate through grpc while all other services talk with REST API over http. 
-I planed to use UberFx to use gRPC for all communications. However I realized that Uber didn't open source some of modules
+The web portal and rundoo service commuinate through grpc while all other services talk with with each other using REST API over http. 
+I planned to use UberFx to use gRPC for all communications. However I realized that Uber didn't open source some of modules
 so using UberFx as a foundation would take longer time to build; the system would be much better but I just didn't have enough time. 
-So this is a pure Go play that hopefully demonstrate my experitises in a distributed system envrionment. 
+So this is a pure Go play that hopefully demonstrates my experitises in a distributed system envrionment. 
 
 
 ## UI overview
 
-The Web portal listens on port 5050 (on Mac 5000 is often taken). It will show the products in the DB; when you start the DB is empty. Some sql files are provided to help you get some data in. 
+The Web portal listens on port 5050 (on Mac 5000 is often taken). You need to have your bowser pointing to localhost:5050 to use the system. It will show the products in the DB; when you start the DB is empty. Some sql files are provided to help you get some data in. 
 
-There are three buttons, Home, Add Product, and Search Product. 
+There are three buttons, Home, Add Product, and Search Product. You can add a product or search for products. You can use home to come back to view the products in the database. There is no pagitation implemented so it only works in a demo envriorment. In a production environment with millions of products in the system, pagitation or other methods need to be implemented.  
 
 ## Database
 
-The rundoo service uses a Postgres database. The Postgres runs in a docker.  The instruction to set up Postgres, it's assumed that you have docker installed. All my tests are done on a Mac. 
+The rundoo service uses a Postgres database. The Postgres runs in a docker container.  The instruction to set up Postgres is as follows, it's assumed that you have docker installed. All my tests are done on a Mac. 
 
 1. Pull Postgres imagine
 ```sh
@@ -47,7 +47,7 @@ postgres     latest    fea618ce20fd   6 days ago   360MB
 ```sh
 docker run --name rundoo-db-container -e POSTGRES_PASSWORD=mysecretpassword -d -p 5432:5432 postgres 
 ```
-This set up the admin password for Postgres. It also builds the forwarding so you can access the database. 
+This sets up the admin password for Postgres. It also builds the port forwarding so you can access the database. 
 
 3. Install the command line tool, psql
 ```sh
@@ -83,7 +83,7 @@ There is a sql script in the codebase called setup.sql. It doesn't seem to work 
 cd ~/HOME/your path/app
 psql -h localhost -p 5432  -U postgres -d rundoo -f setup.sql
 ```
-You can also fill in some entries for the database
+You can also fill in some entries for the database with mock datain mockdata.sql. 
 ```sh
 psql -h localhost -p 5432  -U postgres -d rundoo -f mockdata.sql
 ```
@@ -91,7 +91,7 @@ psql -h localhost -p 5432  -U postgres -d rundoo -f mockdata.sql
 
 ## Database speed up
 
-Indexing is the first thing. I login to the database and nbuild these indexing. 
+Indexing is the first thing that I do in this department. I login to the database and build these indexing. 
 ```sh
 CREATE INDEX idx_name ON products (name);
 CREATE INDEX idx_category ON products  (category);
@@ -100,10 +100,10 @@ CREATE INDEX idx_name_category_sku ON products (name, category, sku);
 ```
 
 When the database becomes big, sharding could be used, we could use products alphabet to build sharding. 
-We could also use the version to sunset old entries to a datalake. In the current table design I didn't have a timestamp. We could have one for the production. We could use the timestamp to shard the table and index. For example we could do the sharding by month. 
+We could also use the version to sunset old entries to a datalake. In the current table design I didn't have a timestamp. We could have one for the production system. We could use the timestamp to shard the table and index. For example we could do the sharding by month. 
 
 ## Service operation
-Go code is meant to be built. But during my development I find it easier to use go run to test. In real life the deployment should be container based but here I am running them. In Vscode it's easy to use cmd+\ to split the terminal. I have four terminals to run the service in the order. You need to be at the app directory. Before running go build, you need to run 
+Go code is meant to be built. But during my development I find it to be easier to use go run to test. In real life the deployment should be container based but here I am running them in a terminal. In Vscode it's easy to use cmd+\ to split the terminal window. I have four terminals to run the services in the order listed below. You need to be at the app directory. Before running go build, you need to run 
 ```sh
 make compile
 ```
@@ -116,14 +116,19 @@ go run $(ls cmd/rundooservice/*.go | grep -v _test.go)
 go run $(ls cmd/portal/*go | grep -v _test.go)
 ```
 
-From the window that runs registry it will print out if a service is up or down; this is what a registry service does in real life. 
+From the window that runs registry it will print out if a service is up or down; this is what a registry service does in real life. You will also see the heartbeat messages.
 
 The log service makes all the logs from all the services to go to it and save them in app/app.log. It's the first place to look if you run into any issue. This is similar to a production environment; the logs could be processed for ELK. 
 
 
-## Behind the scenes 
-Registry service receives each service registration, a service endpoints are recorded and can be quried by other services. A heartbeat is sent periodicly  
+## The design 
+Registry service receives each service registration, a service endpoints are recorded and can be quried by other services. A heartbeat is sent periodically.   
 
+There are four services:
+Registry: service registration and health monitoring. 
+Log service: Centralized logging. 
+Rundoo Service: Business logic and data persistence
+Portal: Web application and API gateway. 
 
 ## Limitation
 
