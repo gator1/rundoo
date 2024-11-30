@@ -173,5 +173,18 @@ go mod vendor at app directory solves the endless cycle of go build asking for g
 guangsongxia in ~/rundoo/app on branch k8s > go test -tags=test ./...
 find many issues so run it. 
 
+to run docker build to builder part only:
+   docker build --target builder -t my-go-builder .
+    eg:  docker build --target builder -f docker/logservice/Dockerfile -t logbuilder  .
+
+docker build and push
+  docker build -f docker/logservice/Dockerfile -t gators/rundoo-log:latest .
+  docker push gators/rundoo-log:latest
+  docker build -f docker/portal/Dockerfile -t gators/rundoo-web:latest .
+  docker push gators/rundoo-web:latest
+  docker build -f docker/registryservice/Dockerfile -t gators/rundoo-registry:latest .
+  docker push gators/rundoo-registry:latest
+  docker build -f docker/rundoo-api/Dockerfile -t gators/rundoo-api:latest .
+  docker push gators/rundoo-api:latest
 
 
