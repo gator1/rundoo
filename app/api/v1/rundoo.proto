@@ -2,7 +2,10 @@ syntax = "proto3";
 
 package rundoo.v1;
 
-option go_package = "./";
+option go_package = "github.com/gator1/rundoo/api/v1;v1";
+
+// Your message and service definitions
+
 
 service ProductService {
   rpc GetProducts (GetProductsRequest) returns (GetProductsResponse) {}

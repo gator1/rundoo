@@ -64,7 +64,7 @@ func (m *RundooModel) GetAll() (products []data.Product, err error) {
 }
 
 func (m *RundooModel) Get(id int64) (product data.Product, err error) {
-	log.Println("RundooModel Get %d called!", id)
+	log.Printf("RundooModel Get %d called!", id)
 
 	conn, err := dialGrpc()
 	if err != nil {

@@ -404,3 +404,7 @@ docker-kubernetes-handling-data-stateful-applications/02/demos/.DS_Store
 .DS_Store
 .DS_Store
 .DS_Store
+
+
+# Go
+go.sum
