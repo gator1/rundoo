@@ -168,4 +168,10 @@ Unit tests are minimum. In real life more unit tests should be done to make sure
 
 
 ## FAQ
+go mod vendor at app directory solves the endless cycle of go build asking for go mod tidy
+
+guangsongxia in ~/rundoo/app on branch k8s > go test -tags=test ./...
+find many issues so run it. 
+
+
 
