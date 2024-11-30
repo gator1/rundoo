@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rundoo-api
+  namespace: rundoo
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: eundoo-api
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rundoo-api
+  namespace: rundoo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: rundoo-api
+  template:
+    metadata:
+      labels:
+        app: rundoo-api
+    spec:
+      containers:
+        - name: api
+          image: psdockerrun/products-api
+          volumeMounts:
+            - name: app-properties
+              mountPath: "/app/config"
+              readOnly: true
+            - name: db-properties
+              mountPath: "/app/config/db"
+              readOnly: true
+      volumes:
+        - name: app-properties
+          configMap:
+            name: rundoo-api-properties
+        - name: db-properties
+          secret:
+            secretName: rundoo-api-db

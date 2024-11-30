@@ -39,7 +39,8 @@ postgres     latest    fea618ce20fd   6 days ago   360MB
 2. Run Postgres in a container
 
 ```sh
-docker run --name rundoo-db-container -e POSTGRES_PASSWORD=mysecretpassword -d -p 5432:5432 postgres 
+#docker run --name rundoo-db-container -e POSTGRES_PASSWORD=mysecretpassword -d -p 5432:5432 postgres 
+docker run --name rundoo-db-container -e POSTGRES_PASSWORD=uber -d -p 5432:5432 postgres 
 ```
 This sets up the admin password for Postgres. It also builds the port forwarding so you can access the database. 
 

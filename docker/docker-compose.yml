@@ -1,0 +1,64 @@
+services:
+
+  rundoo-db:
+    image: gators/rundoo-db
+    build:
+      context: db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=uber
+    networks:
+      - rundoo-net
+
+  rundoo-api:
+    image: gators/rundoo-api
+    build:
+      context: rundoo-api
+    ports:
+      - "6000:80"
+    networks:
+      - rundoo-net
+    depends_on:
+      - rundoo-db
+      - logservice
+      - registryservice
+
+  logservice:
+    image: gators/rundoo-log
+    build:
+      context: logservice
+    ports:
+      - "4000:8080"
+    networks:
+      - rundoo-net
+    depends_on:
+      - rundoo-db
+      - registryservice
+  
+  registryservice:
+    image: gators/rundoo-registry
+    build:
+      context: registryservice
+    ports:
+      - "3000:8080"
+    networks:
+      - rundoo-net
+    depends_on:
+      - rundoo-db
+  
+  portal:
+    image: gators/rundoo-web
+    build:
+      context: portal
+    ports:
+      - "5050:80"
+    networks:
+      - rundoo-net
+    depends_on:
+      - rundoo-api      
+      - registryservice
+      - logservice
+
+networks:
+  rundoo-net:

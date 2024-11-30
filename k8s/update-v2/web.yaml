@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: wb-test-2
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+        version: v2
+    spec:
+      containers:
+        - name: api
+          image: psdockerrun/web:v2
+          env:
+            - name: Environment
+              value: TEST
+            - name: Debug__ShowHost
+              value: "true"
+          volumeMounts:
+            - name: logging-config
+              mountPath: "/app/config"
+              readOnly: true
+            - name: api-config
+              mountPath: "/app/secrets"
+              readOnly: true
+      volumes:
+        - name: logging-config
+          configMap:
+            name: web-logging
+        - name: api-config
+          secret:
+            secretName: web-api
