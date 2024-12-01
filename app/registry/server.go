@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"sync"
@@ -181,7 +181,7 @@ func (s RegistryService) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 		}
 	case http.MethodDelete:
-		payload, err := ioutil.ReadAll(req.Body)
+		payload, err := io.ReadAll(req.Body)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)

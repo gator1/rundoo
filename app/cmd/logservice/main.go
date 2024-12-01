@@ -28,7 +28,6 @@ func main() {
 	r.HeartbeatURL = r.URL + "/heartbeat"
 	r.RequiredServices = make([]registry.ServiceName, 0)
 	r.UpdateURL = r.URL + "/services"
-	//r.HttpHandler = http.HandlerFunc((&log.LogHandler{}).ServeHTTP)
 	r.HttpHandler = handler
 	r.Mux = http.NewServeMux()
 	r.Mux.Handle("/log", handler)

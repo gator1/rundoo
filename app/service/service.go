@@ -3,7 +3,6 @@ package service
 import (
 	"app/registry"
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -71,19 +70,8 @@ func startService(ctx context.Context, config registry.ServiceConfig) context.Co
 
 	}
 
+	go waitForShutdown(ctx, &srv, config, cancel)
 	
-
-	go func() {
-		fmt.Printf("%v started. Press any key to stop.\n", config.Name)
-		var s string
-		fmt.Scanln(&s)
-		err := registry.ShutdownService(fmt.Sprintf("http://%v:%v", config.Host, config.Port))
-		if err != nil {
-			log.Println(err)
-		}
-		srv.Shutdown(ctx)
-		cancel()
-	}()
 
 	return ctx
 }

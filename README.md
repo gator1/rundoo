@@ -187,4 +187,11 @@ docker build and push
   docker build -f docker/rundoo-api/Dockerfile -t gators/rundoo-api:latest .
   docker push gators/rundoo-api:latest
 
+To build a Docker container from the alpine:3.13 image with a simple command that keeps the container running, you can create a Dockerfile with the following content:
+  Use the Alpine 3.13 base image
+    FROM alpine:3.13
+
+  Set a simple command to keep the container running
+    CMD ["sh", "-c", "while true; do sleep 3600; done"]
+
 

@@ -1,3 +1,5 @@
+// +build !docker
+
 package main
 
 import (
@@ -23,13 +25,15 @@ func main() {
 		cancel()
 	}()
 
-	go func() {
-		fmt.Println("Registry service started. Press any key to stop.")
-		var s string
-		fmt.Scanln(&s)
-		srv.Shutdown(ctx)
-		cancel()
-	}()
+
+    go func() {
+        fmt.Println("Registry service started. Press any key to stop.")
+        var s string
+        fmt.Scanln(&s)
+        srv.Shutdown(ctx)
+        cancel()
+    }()
+
 
 	<-ctx.Done()
 	fmt.Println("Shutting down registry service")

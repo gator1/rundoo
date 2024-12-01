@@ -20,7 +20,7 @@ RUN go mod vendor
 
 # Ensure the working directory is set correctly for the build command
 WORKDIR /usr/local/go/src/rundoo/app
-RUN go build -mod=vendor -o /logservice ./cmd/logservice
+RUN go build -tags=docker -mod=vendor -o /logservice ./cmd/logservice
 
 
 # app

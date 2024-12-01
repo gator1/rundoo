@@ -107,7 +107,8 @@ make compile
 in the app directory to generate the grpc files. 
 
 ```sh
-go run cmd/registryservice/main.go
+go run $(ls cmd/registryservice/*.go | grep -v _docker.go)
+go run $(ls cmd/portal/*go | grep -v _test.go)
 go run cmd/logservice/main.go
 go run $(ls cmd/rundooservice/*.go | grep -v _test.go)
 go run $(ls cmd/portal/*go | grep -v _test.go)

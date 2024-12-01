@@ -21,7 +21,7 @@ RUN go mod vendor
 
 # Ensure the working directory is set correctly for the build command
 WORKDIR /usr/local/go/src/rundoo/app
-RUN go build -o /rundooservice ./cmd/rundooservice
+RUN go build -tags=docker -o /rundooservice ./cmd/rundooservice
 # app
 FROM alpine:3.13
 
