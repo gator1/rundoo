@@ -16,7 +16,7 @@ services:
     build:
       context: rundoo-api
     ports:
-      - "6000:80"
+      - "6000:6000"
     networks:
       - rundoo-net
     depends_on:
@@ -29,7 +29,7 @@ services:
     build:
       context: logservice
     ports:
-      - "4000:8080"
+      - "4000:4000"
     networks:
       - rundoo-net
     depends_on:
@@ -41,7 +41,7 @@ services:
     build:
       context: registryservice
     ports:
-      - "3000:8080"
+      - "3000:3000"
     networks:
       - rundoo-net
     depends_on:
@@ -52,13 +52,21 @@ services:
     build:
       context: portal
     ports:
-      - "5050:80"
+      - "5050:5050"
     networks:
       - rundoo-net
     depends_on:
       - rundoo-api      
       - registryservice
       - logservice
+
+  tcpdump:
+    image: nicolaka/netshoot
+    command: ["tcpdump", "-v", "-i", "eth0"]
+    networks:
+      - rundoo-net
+    cap_add:
+      - NET_ADMIN
 
 networks:
   rundoo-net:
