@@ -2,7 +2,7 @@ package log
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	stlog "log"
 	"net/http"
 	"os"
@@ -29,7 +29,7 @@ func Run(destination string) {
 type LogHandler struct {}
 
 func (lh *LogHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-    msg, err := ioutil.ReadAll(r.Body)
+    msg, err := io.ReadAll(r.Body)
     if err != nil || len(msg) == 0 {
         w.WriteHeader(http.StatusBadRequest)
         return

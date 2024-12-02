@@ -1,4 +1,4 @@
-// +build !docker
+// +build docker
 
 package main
 
@@ -16,7 +16,7 @@ import (
 func main() {
 	log.Run("./app.log")
 
-	host, port := "localhost", "4000"
+	host, port := "logservice", "4000"
 	serviceAddress := fmt.Sprintf("http://%v:%v", host, port)
 
 	var r registry.ServiceConfig
