@@ -1,4 +1,4 @@
-// +build !docker
+// +build docker
 
 package main
 
@@ -25,13 +25,13 @@ type application struct {
 }
 
 func main() {
-	host, port := "localhost", "6000"
+	host, port := "rundoo-api", "6000"
 	serviceAddress := fmt.Sprintf("http://%v:%v", host, port)
 
 	var r registry.ServiceConfig
 
 	
-	dsn := "postgres://postgres:mysecretpassword@localhost/rundoo?sslmode=disable"
+	dsn := "postgres://postgres:uber@rundoo-db/postgres?sslmode=disable"
 	
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {

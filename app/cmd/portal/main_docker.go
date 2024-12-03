@@ -1,4 +1,4 @@
-// +build !docker
+// +build docker
 
 package main
 
@@ -19,7 +19,7 @@ type application struct {
 
 func main() {
 	
-	host, port := "localhost", "5050"
+	host, port := "portal", "5050"
 	serviceAddress := fmt.Sprintf("http://%v:%v", host, port)
 
 

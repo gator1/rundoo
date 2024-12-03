@@ -14,22 +14,23 @@ RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
 WORKDIR /usr/local/go/src/rundoo
 COPY app ./app
+
+# Ensure the working directory is set correctly for the build command
 WORKDIR /usr/local/go/src/rundoo/app
 RUN make compile
 RUN go mod tidy
 RUN go mod vendor
 
-# Ensure the working directory is set correctly for the build command
-WORKDIR /usr/local/go/src/rundoo/app
 RUN go build -tags=docker -o /portal ./cmd/portal 
+
 # app
 FROM alpine:3.13
 
 ENV POSTGRES_CONNECTION_STRING="host=rundoo-db port=5432 user=postgres password=uber dbname=postgres sslmode=disable"
-EXPOSE 8080
+EXPOSE 5050
 CMD ["/app/portal"]
 
 WORKDIR /app
 COPY --from=builder /portal .
-
+COPY app/ui ./ui
 
