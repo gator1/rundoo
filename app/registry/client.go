@@ -46,7 +46,7 @@ func (p *providers) Update(pat patch) {
 func (p providers) get(name ServiceName) (string, error) {
 	providers, ok := p.services[name]
 	if !ok {
-		return "", fmt.Errorf("No providers available for service %v", name)
+		return "", fmt.Errorf("no providers available for service %v", name)
 	}
 	idx := int(rand.Float32() * float32(len(providers)))
 	return providers[idx], nil
@@ -82,7 +82,7 @@ func RegisterService(r ServiceConfig) error {
 		return fmt.Errorf("failed to Post ServicesURL %s  %w", ServicesURL, err)
 	}
 	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("Failed to register service, ServicesURL %s. Registry service responded with code %v", ServicesURL, res.StatusCode)
+		return fmt.Errorf("failed to register service, ServicesURL %s. Registry service responded with code %v", ServicesURL, res.StatusCode)
 	}
 	return nil
 }
@@ -114,7 +114,7 @@ func RegisterServiceMux(r ServiceConfig) error {
 		return fmt.Errorf("failed to Post ServicesURL %s  %w", ServicesURL, err)
 	}
 	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("Failed to register service, ServicesURL %s. Registry service responded with code %v", ServicesURL, res.StatusCode)
+		return fmt.Errorf("failed to register service, ServicesURL %s. Registry service responded with code %v", ServicesURL, res.StatusCode)
 	}
 	return nil
 }
@@ -129,7 +129,7 @@ func ShutdownService(serviceURL string) error {
 	}
 	res, err := http.DefaultClient.Do(req)
 	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("Failed to deregister service. Registry service responded with code %v", res.StatusCode)
+		return fmt.Errorf("failed to deregister service. Registry service responded with code %v", res.StatusCode)
 	}
 	return err
 }

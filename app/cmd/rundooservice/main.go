@@ -1,11 +1,10 @@
-// +build !docker
-
 package main
 
 import (
 	
 	"context"
 	"database/sql"
+	"flag"
 	"fmt"
 	stlog "log"
 	
@@ -19,22 +18,39 @@ import (
 	"app/service"
 )
 
+var isLocalhost bool
+
 type application struct {
 	models data.Models
 	handler *rundoo.ProductsHandler
 }
 
 func main() {
-	host, port := "localhost", "6000"
+	localhost := flag.Bool("localhost", false, "Run the application in localhost mode")
+    flag.Parse()
+
+    // Set the global variable
+    isLocalhost = *localhost
+	service.IsLocalhost = isLocalhost
+
+	host, port := "rundoo-api", "6000"
+	registry.ServicesURL = "http://registryservice:3000/services"
+	if isLocalhost {
+		registry.ServicesURL = "http://localhost:3000/services"
+		host = "localhost"
+	}
 	serviceAddress := fmt.Sprintf("http://%v:%v", host, port)
 
 	var r registry.ServiceConfig
 
-	
-	dsn := "postgres://postgres:mysecretpassword@localhost/rundoo?sslmode=disable"
-	
+	dsn := "postgres://postgres:uber@rundoo-db/postgres?sslmode=disable"
+	if isLocalhost {
+		dsn = "postgres://postgres:mysecretpassword@localhost/rundoo?sslmode=disable"
+	}
+	stlog.Printf("before open db dsn: %v", dsn)	
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
+		stlog.Printf(" open db failed dsn: %v", dsn)	
 		stlog.Fatal(err)
 	}
 

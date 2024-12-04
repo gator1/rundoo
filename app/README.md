@@ -107,11 +107,10 @@ make compile
 in the app directory to generate the grpc files. 
 
 ```sh
-go run $(ls cmd/registryservice/*.go | grep -v _docker.go)
-go run $(ls cmd/portal/*go | grep -v _test.go)
-go run cmd/logservice/main.go
-go run $(ls cmd/rundooservice/*.go | grep -v _test.go)
-go run $(ls cmd/portal/*go | grep -v _test.go)
+go run $(ls cmd/registryservice/*.go | grep -v _docker.go) -localhost
+go run cmd/logservice/main.go -localhost
+go run $(ls cmd/rundooservice/*.go | grep -v _test.go) -localhost
+go run $(ls cmd/portal/*go | grep -v _test.go) -localhost
 ```
 
 From the window that runs registry it will print out if a service is up or down; this is what a registry service does in real life. You will also see the heartbeat messages.
@@ -168,4 +167,32 @@ Unit tests are minimum. In real life more unit tests should be done to make sure
 
 
 ## FAQ
+go mod vendor at app directory solves the endless cycle of go build asking for go mod tidy
+
+guangsongxia in ~/rundoo/app on branch k8s > go test -tags=test ./...
+find many issues so run it. 
+
+to run docker build to builder part only:
+   docker build --target builder -t my-go-builder .
+    eg:  docker build --target builder -f docker/logservice/Dockerfile -t logbuilder  .
+
+docker build and push
+  docker build -f docker/logservice/Dockerfile -t gators/rundoo-log:latest .
+  docker push gators/rundoo-log:latest
+  docker build -f docker/portal/Dockerfile -t gators/rundoo-web:latest .
+  docker push gators/rundoo-web:latest
+  docker build -f docker/registryservice/Dockerfile -t gators/rundoo-registry:latest .
+  docker push gators/rundoo-registry:latest
+  docker build -f docker/rundoo-api/Dockerfile -t gators/rundoo-api:latest .
+  docker push gators/rundoo-api:latest
+
+To build a Docker container from the alpine:3.13 image with a simple command that keeps the container running, you can create a Dockerfile with the following content:
+  Use the Alpine 3.13 base image
+    FROM alpine:3.13
+
+  Set a simple command to keep the container running
+    CMD ["sh", "-c", "while true; do sleep 3600; done"]
+
+
+
 

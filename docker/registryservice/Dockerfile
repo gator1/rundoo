@@ -20,12 +20,13 @@ RUN go mod vendor
 
 # Ensure the working directory is set correctly for the build command
 WORKDIR /usr/local/go/src/rundoo/app
-RUN go build -tags=docker -o /registryservice ./cmd/registryservice
+#RUN go build -tags=docker -o /registryservice ./cmd/registryservice
+RUN go build -o /registryservice ./cmd/registryservice
 # app
 FROM alpine:3.13
 
 ENV POSTGRES_CONNECTION_STRING="host=rundoo-db port=5432 user=postgres password=uber dbname=postgres sslmode=disable"
-EXPOSE 8080
+EXPOSE 3000
 CMD ["/app/registryservice"]
 #CMD ["sh", "-c", "while true; do sleep 3600; done"]
 

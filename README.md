@@ -108,10 +108,10 @@ make compile
 in the app directory to generate the grpc files. 
 
 ```sh
-go run cmd/registryservice/main.go
-go run cmd/logservice/main.go
-go run $(ls cmd/rundooservice/*.go | grep -v _test.go)
-go run $(ls cmd/portal/*go | grep -v _test.go)
+go run cmd/registryservice/main.go -localhost
+go run cmd/logservice/main.go -localhost
+go run $(ls cmd/rundooservice/*.go | grep -v _test.go) -localhost
+go run $(ls cmd/portal/*go | grep -v _test.go) -localhost
 ```
 
 From the window that runs registry it will print out if a service is up or down; this is what a registry service does in real life. You will also see the heartbeat messages.

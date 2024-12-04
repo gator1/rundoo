@@ -1,9 +1,8 @@
-// +build !docker
-
 package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	stlog "log"
 	
@@ -13,13 +12,30 @@ import (
 	"app/service"
 )
 
+var isLocalhost bool
+
 type application struct {
 	productlist *models.RundooModel
 }
 
 func main() {
+	localhost := flag.Bool("localhost", false, "Run the application in localhost mode")
+    flag.Parse()
+
+    // Set the global variable
+    isLocalhost = *localhost
+	service.IsLocalhost = isLocalhost
+
+	host, port := "portal", "5050"
+	// Set the ServicesURL based on the flag
+    registry.ServicesURL = "http://registryservice:3000/services"
+    if isLocalhost {
+		host = "localhost"
+		registry.ServicesURL = "http://localhost:3000/services"
+	} 
 	
-	host, port := "localhost", "5050"
+	fmt.Printf("We  runs on a %s\n", host)
+
 	serviceAddress := fmt.Sprintf("http://%v:%v", host, port)
 
 
@@ -29,7 +45,15 @@ func main() {
 
 
 	var r registry.ServiceConfig
-	r.Host = host
+	if isLocalhost {
+		r.Host = "localhost"
+		fmt.Println("registry runs on localhost")
+	} else {
+		fmt.Println("registry runs on a container")
+		r.Host = "registryservice"
+	}
+
+	
 	r.Port = port
 	
 	app.routes(&r, serviceAddress)

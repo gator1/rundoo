@@ -15,13 +15,15 @@ RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 WORKDIR /usr/local/go/src/rundoo
 COPY app ./app
 
+
 # Ensure the working directory is set correctly for the build command
 WORKDIR /usr/local/go/src/rundoo/app
 RUN make compile
 RUN go mod tidy
 RUN go mod vendor
 
-RUN go build -tags=docker -o /portal ./cmd/portal 
+#RUN go build -tags=docker -o /portal ./cmd/portal 
+RUN go build -o /portal ./cmd/portal 
 
 # app
 FROM alpine:3.13
@@ -32,5 +34,5 @@ CMD ["/app/portal"]
 
 WORKDIR /app
 COPY --from=builder /portal .
-COPY app/ui ./ui
+COPY --from=builder /usr/local/go/src/rundoo/app/ui ./ui
 
