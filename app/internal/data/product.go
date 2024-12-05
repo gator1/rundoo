@@ -143,6 +143,7 @@ func (b ProductModel) GetAll() ([]*Product, error) {
 
 	rows, err := b.DB.Query(query)
 	if err != nil {
+		fmt.Printf("ProductModel GetAll err %v\n", err)
 		return nil, err
 	}
 
@@ -162,6 +163,7 @@ func (b ProductModel) GetAll() ([]*Product, error) {
 			&product.Version,
 		)
 		if err != nil {
+			fmt.Printf("ProductModel GetAll row scan err %v\n", err)
 			return nil, err
 		}
 
@@ -169,9 +171,11 @@ func (b ProductModel) GetAll() ([]*Product, error) {
 	}
 
 	if err = rows.Err(); err != nil {
+		fmt.Printf("ProductModel GetAll row err %v\n", err)
 		return nil, err
 	}
 
+	fmt.Printf("ProductModel GetAll %v\n", products)
 	return products, nil
 }
 

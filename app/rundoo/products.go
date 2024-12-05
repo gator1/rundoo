@@ -1,6 +1,7 @@
 package rundoo
 
 import (
+	"fmt"
 	"log"
 	"sync"
 
@@ -50,7 +51,8 @@ func NewService( models *data.Models) ServiceInterface {
 func (s *ProductService) GetProducts() (result data.Products, err error) {
 	products, err := s.models.Products.GetAll()
 	if err != nil {
-		log.Printf("ProductService, GetProducts %v", err)
+		log.Printf("ProductService, GetProducts %v\n", err)
+		fmt.Printf("ProductService, GetProducts %v\n", err)
 		return
 	}
 	for _, mproduct := range products {
@@ -63,20 +65,22 @@ func (s *ProductService) GetProducts() (result data.Products, err error) {
 		})
 
 	}
+	fmt.Printf("ProductService, GetProducts %v\n", result)
 	return 
 }
 
 func (s *ProductService) GetProduct(id int64) (result data.Product, err error) {
 	product, err := s.models.Products.Get(id)
 	if err != nil {
-		log.Printf("ProductService, GetProduct %d %v", id, err)
+		log.Printf("ProductService, GetProduct %d %v\n", id, err)
+		fmt.Printf("ProductService, GetProduct %d %v\n", id, err)
 		return
 	}
 	result.ID = product.ID
 	result.Name = product.Name
 	result.Category = data.CategoryType(product.Category)
 	result.Sku =  data.SKU(product.Sku)
-
+	fmt.Printf("ProductService, GetProduct %v\n", result)
 	return 
 }
 
@@ -86,7 +90,8 @@ func (s *ProductService) SearchProducts(filters []rundoogrpc.Filter) (products d
 	
 	rundooproducts, err := s.models.Products.SearchProducts(filters)
 	if err != nil {
-		log.Printf("ProductService, SearchProducts %v", err)
+		log.Printf("ProductService, SearchProducts %v\n", err)
+		fmt.Printf("ProductService, SearchProducts %v\n", err)
 		return
 	}
 	
@@ -107,7 +112,8 @@ func (s *ProductService) SearchProducts(filters []rundoogrpc.Filter) (products d
 func (s *ProductService) AddProduct(product data.Product) (result bool, err error) {
     err = s.models.Products.Insert(&product)
 	if err != nil {
-		log.Printf("ProductService, AddProduct %v", err)
+		log.Printf("ProductService, AddProduct %v\n", err)
+		fmt.Printf("ProductService, AddProduct %v\n", err)
 		return
 	}
 
