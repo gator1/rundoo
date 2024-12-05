@@ -60,6 +60,7 @@ func main() {
 
 	ctx, err := service.Start(context.Background(), r)
 	if err != nil {
+		fmt.Println("Portal can't start", err)
 		stlog.Fatal(err)
 	}
 

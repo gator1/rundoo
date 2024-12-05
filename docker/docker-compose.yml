@@ -48,7 +48,7 @@ services:
       - rundoo-db
   
   portal:
-    image: gators/rundoo-web
+    image: gators/golang
     build:
       context: portal
     ports:

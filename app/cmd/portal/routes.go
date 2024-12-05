@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"app/registry"
@@ -15,6 +16,7 @@ func (app *application) routes(r *registry.ServiceConfig, serviceAddress string)
 		registry.RundooService,
 	}
 	r.UpdateURL = r.URL + "/services"
+	fmt.Printf("Service url %s %v\n", r.URL, r)
 	
 	r.Mux = http.NewServeMux()
 	fileServer := http.FileServer(http.Dir("./ui/static/"))

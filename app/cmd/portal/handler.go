@@ -1,12 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"text/template"
-	
+
 	rundoogrpc "app/api/v1"
 	"app/internal/data"
 )
@@ -16,6 +17,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	products, err := app.productlist.GetAll()
 	
 	if err != nil {
+		fmt.Println("home err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -29,6 +31,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
 		log.Print(err.Error())
+		fmt.Println("home template template", err)
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
@@ -36,6 +39,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	err = ts.ExecuteTemplate(w, "base", products)
 	if err != nil {
 		log.Print(err.Error())
+		fmt.Println("home template ExecuteTemplate", err)
 		http.Error(w, "Internal server error", 500)
 		return
 	}
@@ -46,12 +50,14 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 func (app *application) productView(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
+		fmt.Println("productView, get id not found", err)
 		http.NotFound(w, r)
 		return
 	}
 
 	product, err := app.productlist.Get(int64(id))
 	if err != nil {
+		fmt.Println("productView, get product not found", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -67,6 +73,8 @@ func (app *application) productView(w http.ResponseWriter, r *http.Request) {
 
 	ts, err := template.New("showProduct").Funcs(funcs).ParseFiles(files...)
 	if err != nil {
+		fmt.Println("productView, show product", err)
+		
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 		return
@@ -74,6 +82,7 @@ func (app *application) productView(w http.ResponseWriter, r *http.Request) {
 
 	err = ts.ExecuteTemplate(w, "base", product)
 	if err != nil {
+		fmt.Println("productView,ExecuteTemplate", err)
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 		return
@@ -87,6 +96,7 @@ func (app *application) productCreate(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		app.productCreateProcess(w, r)
 	default:
+		fmt.Println("productView,productCreate, not allowed")
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
 	}
@@ -99,6 +109,7 @@ func (app *application) productsSearch(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		app.productsSearchProcess(w, r)
 	default:
+		fmt.Println("productView,productsSearch, not allowed")
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
 	}
@@ -115,12 +126,15 @@ func (app *application) productCreateForm(w http.ResponseWriter, r *http.Request
 
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
+		fmt.Println("productCreateForm, ParseFiles err", err)
+		
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
+		fmt.Println("productCreateForm, ExecuteTemplate err", err)
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 		return
@@ -130,6 +144,7 @@ func (app *application) productCreateForm(w http.ResponseWriter, r *http.Request
 func (app *application) productCreateProcess(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
+		fmt.Println("productCreateProcess, ParseForm err", err)
 		log.Println(err)
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
@@ -148,6 +163,7 @@ func (app *application) productCreateProcess(w http.ResponseWriter, r *http.Requ
 
 	err = app.productlist.AddProduct(&product)
 	if err != nil {
+		fmt.Println("productCreateProcess, AddProduct err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -166,12 +182,15 @@ func (app *application) productsSearchForm(w http.ResponseWriter, r *http.Reques
 
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
+		fmt.Println("productsSearchForm, ParseFiles err", err)
+		
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
+		fmt.Println("productsSearchForm, ParExecuteTemplateseFiles err", err)
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 		return
@@ -181,6 +200,7 @@ func (app *application) productsSearchForm(w http.ResponseWriter, r *http.Reques
 func (app *application) productsSearchProcess(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
+		fmt.Println("productsSearchProcess, ParseForm err", err)
 		log.Println(err)
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
@@ -193,6 +213,7 @@ func (app *application) productsSearchProcess(w http.ResponseWriter, r *http.Req
 	
 	products, err := app.productlist.SearchProducts(filters)
 	if err != nil {
+		fmt.Println("productsSearchProcess, SearchProducts err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -204,6 +225,7 @@ func (app *application) productsSearchProcess(w http.ResponseWriter, r *http.Req
 
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
+		fmt.Println("productsSearchProcess, ParseFiles err", err)
 		log.Print(err.Error())
 		http.Error(w, "Internal Server Error", 500)
 		return
@@ -211,6 +233,7 @@ func (app *application) productsSearchProcess(w http.ResponseWriter, r *http.Req
 
 	err = ts.ExecuteTemplate(w, "base", products)
 	if err != nil {
+		fmt.Println("productsSearchProcess, ExecuteTemplate err", err)
 		log.Print(err.Error())
 		http.Error(w, "Internal server error", 500)
 		return
