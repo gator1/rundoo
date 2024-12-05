@@ -48,11 +48,12 @@ services:
       - rundoo-db
   
   portal:
-    image: gators/golang
+    image: gators/rundoo-web
     build:
       context: portal
     ports:
       - "5050:5050"
+      - "2345:2345"
     networks:
       - rundoo-net
     depends_on:
