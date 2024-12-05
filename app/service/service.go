@@ -12,19 +12,19 @@ import (
 
 func Start(ctx context.Context, config registry.ServiceConfig) (context.Context, error) {
 	
-	//var err error
+	var err error
 
 	ctx = startService(ctx, config)
 
-	// if config.Mux != nil {
-	// 	err = registry.RegisterServiceMux(config)
-	// } else {
-	// 	err = registry.RegisterService(config)	
-	// }
+	if config.Mux != nil {
+		err = registry.RegisterServiceMux(config)
+	} else {
+		err = registry.RegisterService(config)	
+	}
 	
-	// if err != nil {
-	// 	return ctx, err
-	// }
+	if err != nil {
+		return ctx, err
+	}
 
 	return ctx, nil
 }

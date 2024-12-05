@@ -5,9 +5,8 @@ import (
 	"flag"
 	"fmt"
 	stlog "log"
-	
 	"app/internal/models"
-	"app/log"
+    "app/log"	
 	"app/registry"
 	"app/service"
 )
@@ -67,7 +66,6 @@ func main() {
 	if logProvider, err := registry.GetProvider(registry.LogService); err == nil {
 		log.SetClientLogger(logProvider, r.Name)
 	}
-
 	<-ctx.Done()
 	fmt.Println("Shutting down rundoo portal")
 	stlog.Println("Shutting down rundoo portal")

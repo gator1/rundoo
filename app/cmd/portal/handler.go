@@ -8,19 +8,12 @@ import (
 	"strings"
 	"text/template"
 
-	rundoogrpc "app/api/v1"
-	"app/internal/data"
+
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
-	products, err := app.productlist.GetAll()
-	
-	if err != nil {
-		fmt.Println("home err", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
+
 
 	files := []string{
 		"./ui/html/base.html",
@@ -36,7 +29,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ts.ExecuteTemplate(w, "base", products)
+	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		log.Print(err.Error())
 		fmt.Println("home template ExecuteTemplate", err)
@@ -55,13 +48,7 @@ func (app *application) productView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product, err := app.productlist.Get(int64(id))
-	if err != nil {
-		fmt.Println("productView, get product not found", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
+	
 	files := []string{
 		"./ui/html/base.html",
 		"./ui/html/partials/nav.html",
@@ -80,7 +67,7 @@ func (app *application) productView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ts.ExecuteTemplate(w, "base", product)
+	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		fmt.Println("productView,ExecuteTemplate", err)
 		log.Println(err)
@@ -150,23 +137,7 @@ func (app *application) productCreateProcess(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	name := r.PostForm.Get("name")
-
-	category := r.PostForm.Get("category") 
-	sku := r.PostForm.Get("sku") 
 	
-	product := data.Product {
-		Name:     name,
-		Category:     data.CategoryType(category),
-		Sku: data.SKU(sku),
-	}
-
-	err = app.productlist.AddProduct(&product)
-	if err != nil {
-		fmt.Println("productCreateProcess, AddProduct err", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 	
@@ -206,17 +177,8 @@ func (app *application) productsSearchProcess(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	searchQuery := r.PostForm.Get("q")
-	filterType := r.PostForm.Get("Type")
 	
-	filters := []rundoogrpc.Filter{{Field: filterType, Value: searchQuery}}
 	
-	products, err := app.productlist.SearchProducts(filters)
-	if err != nil {
-		fmt.Println("productsSearchProcess, SearchProducts err", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
 	files := []string{
 		"./ui/html/base.html",
 		"./ui/html/partials/nav.html",
@@ -231,7 +193,7 @@ func (app *application) productsSearchProcess(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	err = ts.ExecuteTemplate(w, "base", products)
+	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		fmt.Println("productsSearchProcess, ExecuteTemplate err", err)
 		log.Print(err.Error())
