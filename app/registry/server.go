@@ -33,6 +33,14 @@ func (r *Registry) add(reg ServiceConfig) error {
 	return err
 }
 
+func (r *Registry) get(name string) (ServiceConfig, bool) {
+    r.mutex.RLock()
+    defer r.mutex.RUnlock()
+    service, exists := r.services[name]
+    return service, exists
+}
+
+
 func (r *Registry) remove(url string) error {
 	for k, v := range r.services {
 		if v.URL == url {
@@ -85,10 +93,12 @@ func (r Registry) notify(p patch) {
 func (r Registry) sendPatch(p patch, url string) error {
 	d, err := json.Marshal(p)
 	if err != nil {
+		log.Println("Marshall error", err)
 		return err
 	}
 	_, err = http.Post(url, "application/json", bytes.NewBuffer(d))
 	if err != nil {
+		log.Println("Post error", err)
 		return err
 	}
 	return nil
@@ -111,6 +121,7 @@ func (r Registry) sendRequiredServices(reg ServiceConfig) error {
 	}
 	err := r.sendPatch(p, reg.UpdateURL)
 	if err != nil {
+		log.Println("sendPatch error", err)
 		return err
 	}
 	return nil
@@ -162,29 +173,48 @@ func SetupRegistryService() {
 type RegistryService struct{}
 
 func (s RegistryService) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	log.Println("Request received")
+	fmt.Printf("server ServeHTTP Request received req %v\n", req)
 	switch req.Method {
 	case http.MethodPost:
 		dec := json.NewDecoder(req.Body)
 		var r ServiceConfig
 		err := dec.Decode(&r)
 		if err != nil {
-			log.Println(err)
+			log.Println("server Post ServeHTTP Decode error", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		log.Printf("Adding service: %v with URL: %v", r.Name, r.URL)
+		log.Printf("server ServeHTTP Adding service: %v with URL: %v\n", r.Name, r.URL)
 		err = regi.add(r)
 		if err != nil {
-			log.Println(err)
+			log.Println("server ServeHTTP add error", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 
 		}
+	case http.MethodGet:
+		serviceName := req.URL.Query().Get("name")
+		log.Printf("server ServeHTTP Getting service: %v \n", serviceName)
+		 // Get the service configuration
+		 service, exists := regi.get(string(serviceName))
+		 if !exists {
+			fmt.Println("Service not found", serviceName)
+			http.Error(w, "Service not found", http.StatusNotFound)
+			return
+		 }
+ 
+		 // Encode the service configuration as JSON and write it to the response
+		 w.Header().Set("Content-Type", "application/json")
+		 if err := json.NewEncoder(w).Encode(service); err != nil {
+			fmt.Println("Failed to encode service", err)
+			http.Error(w, "Failed to encode service", http.StatusInternalServerError)
+		 }
+
 	case http.MethodDelete:
 		payload, err := io.ReadAll(req.Body)
 		if err != nil {
-			log.Println(err)
+			log.Println("server ServeHTTP ReadAll error", err)
+			
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -192,6 +222,7 @@ func (s RegistryService) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		log.Printf("Removing service at URL: %v", url)
 		err = regi.remove(url)
 		if err != nil {
+			fmt.Println("server ServeHTTP remove error", err)
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return

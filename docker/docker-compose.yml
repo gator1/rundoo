@@ -53,10 +53,10 @@ services:
       context: portal
     ports:
       - "5050:5050"
-      - "2345:2345"
     networks:
       - rundoo-net
     depends_on:
+      - rundoo-db
       - rundoo-api      
       - registryservice
       - logservice

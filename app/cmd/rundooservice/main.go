@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	stlog "log"
+	"time"
 	
 
 	_ "github.com/lib/pq"
@@ -47,22 +48,44 @@ func main() {
 	if isLocalhost {
 		dsn = "postgres://postgres:mysecretpassword@localhost/rundoo?sslmode=disable"
 	}
-	stlog.Printf("before open db dsn: %v", dsn)	
-	db, err := sql.Open("postgres", dsn)
+	stlog.Printf("before open db dsn: %v\n", dsn)	
+	var db *sql.DB
+	var err error
+
+	for i := 0; i < 3; i++ {
+		db, err = sql.Open("postgres", dsn)
+		if err == nil {
+			break
+		}
+		stlog.Printf("Attempt %d: open db failed dsn: %v, error: %v\n", i+1, dsn, err)
+		time.Sleep(2 * time.Second) // Wait for 2 seconds before retrying
+	}
+
 	if err != nil {
-		stlog.Printf(" open db failed dsn: %v", dsn)	
+		stlog.Printf("Failed to open db after 3 attempts dsn: %v\n", dsn)
 		stlog.Fatal(err)
 	}
+	stlog.Printf("after open db success dsn: %v\n", dsn)	
 
 	defer db.Close()
 
-	err = db.Ping()
-	if err != nil {
-		stlog.Fatal(err)
+	for i := 0; i < 3; i++ {
+		err = db.Ping()
+		if err == nil {
+			break
+		}
+		stlog.Printf("Attempt %d: ping db failed dsn: %v, error: %v\n", i+1, dsn, err)
+		time.Sleep(2 * time.Second) // Wait for 2 seconds before retrying
 	}
 
+	if err != nil {
+		stlog.Printf("Failed to ping db after 3 attempts dsn: %v\n", dsn)
+		stlog.Fatal(err)
+	}
+	
 	stlog.Printf("database connection pool established")
-
+	
+	r. Name = registry.RundooService
 	r.Host = host
 	r.Port = port
 	
@@ -76,9 +99,11 @@ func main() {
 
 	app.routes(&r, serviceAddress, productService)
 
+	stlog.Printf("rundooService rundoo-api runs on a %s\n", host)
 
 	ctx, err := service.Start(context.Background(), r)
 	if err != nil {
+		stlog.Printf("dservice.Start failed: %v\n", err)
 		stlog.Fatal(err)
 	}
 	if logProvider, err := registry.GetProvider(registry.LogService); err == nil {
@@ -86,5 +111,5 @@ func main() {
 	}
 
 	<-ctx.Done()
-	fmt.Println("Shutting down product service")
+	stlog.Println("Shutting down product service")
 }

@@ -46,7 +46,7 @@ func main() {
 	r.Mux.Handle("/log", handler)
 	r.Mux.Handle("/log/", handler)
 
-	fmt.Printf("starting log service on %s with registry at %s Host = %s port=%s \n", serviceAddress, registry.ServicesURL,	r.Host, r.Port)
+	stlog.Printf("starting log service on %s with registry at %s Host = %s port=%s \n", serviceAddress, registry.ServicesURL,	r.Host, r.Port)
 
 	ctx, err := service.Start(context.Background(), r)
 	if err != nil {
@@ -54,6 +54,6 @@ func main() {
 	}
 
 	<-ctx.Done()
-	fmt.Println("Shutting down log service")
+	stlog.Println("Shutting down log service")
 
 }

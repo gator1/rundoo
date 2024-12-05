@@ -17,7 +17,7 @@ var IsLocalhost bool
 func waitForShutdown(ctx context.Context, srv *http.Server, config registry.ServiceConfig, cancel context.CancelFunc) {
 	
 	if IsLocalhost {
-		fmt.Printf("%v started. Press any key to stop.\n", config.Name)
+		log.Printf("%v started. Press any key to stop.\n", config.Name)
 		var s string
 		fmt.Scanln(&s)
 		err := registry.ShutdownService(fmt.Sprintf("http://%v:%v", config.Host, config.Port))
@@ -27,14 +27,14 @@ func waitForShutdown(ctx context.Context, srv *http.Server, config registry.Serv
 		srv.Shutdown(ctx)
 		cancel()
 	} else {
-		fmt.Printf("%v started. Wait for Sigterm, docker.\n", config.Name)
+		log.Printf("%v started. Wait for Sigterm, docker.\n", config.Name)
 		// Set up signal handling to gracefully shut down the server
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
 		go func() {
 			<-sigChan
-			fmt.Println("Received shutdown signal")
+			log.Println("Received shutdown signal")
 			srv.Shutdown(ctx)
 			cancel()
 		}()

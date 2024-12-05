@@ -164,8 +164,8 @@ func dialGrpc() (conn *grpc.ClientConn, err error) {
 	serviceURL, err := registry.GetProvider(registry.RundooService)
 	fmt.Printf("dialGrpc: serviceURL: %s\n", serviceURL)
 	if err != nil {
-		log.Println("Error getting provider ProductService: ", err)
-		fmt.Println("Error getting provider ProductService: ", err)
+		log.Println("Error getting provider RundooService: ", err)
+		fmt.Println("Error getting provider RundooService: ", err)
 		return 
 	}
 	record := strings.Split(serviceURL, ":") // http://localhost:port

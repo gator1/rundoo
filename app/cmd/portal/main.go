@@ -33,7 +33,7 @@ func main() {
 		registry.ServicesURL = "http://localhost:3000/services"
 	} 
 	
-	fmt.Printf("We  runs on a %s\n", host)
+	stlog.Printf("rundoo portal runs on a %s\n", host)
 
 	serviceAddress := fmt.Sprintf("http://%v:%v", host, port)
 
@@ -44,12 +44,13 @@ func main() {
 
 
 	var r registry.ServiceConfig
+	r.Name = registry.RundooPortal
 	if isLocalhost {
 		r.Host = "localhost"
-		fmt.Println("registry runs on localhost")
+		stlog.Println("registry runs on localhost")
 	} else {
-		fmt.Println("registry runs on a container")
-		r.Host = "registryservice"
+		stlog.Println("registry runs on a container")
+		r.Host = "portal"
 	}
 
 	
@@ -59,15 +60,21 @@ func main() {
 
 	ctx, err := service.Start(context.Background(), r)
 	if err != nil {
-		fmt.Println("Portal can't start", err)
+		stlog.Println("Portal can't start", err)
 		stlog.Fatal(err)
 	}
 
+	fmt.Printf("rundoo portal before GetProviderfor LogService %s\n", host)
 	if logProvider, err := registry.GetProvider(registry.LogService); err == nil {
 		log.SetClientLogger(logProvider, r.Name)
 	}
+	stlog.Printf("rundoo portal before GetProviderfor RundooService %s\n", host)
+	fmt.Printf("rundoo portal before GetProviderfor RundooService %s\n", host)
+	if _, err := registry.GetProvider(registry.RundooService); err != nil {
+		stlog.Println("rundoo-api is not avilable in the registry for portal")
+		fmt.Println("rundoo-api is not avilable in the registry for portal")
+	}
 	<-ctx.Done()
-	fmt.Println("Shutting down rundoo portal")
 	stlog.Println("Shutting down rundoo portal")
 
 
