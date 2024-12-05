@@ -13,7 +13,13 @@ import (
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
+	_, err := app.productlist.GetAll()
 
+	if err != nil {
+            fmt.Println("home err", err)
+            http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+              //return
+	}
 
 	files := []string{
 		"./ui/html/base.html",

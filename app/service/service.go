@@ -3,6 +3,7 @@ package service
 import (
 	"app/registry"
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -56,14 +57,17 @@ func startService(ctx context.Context, config registry.ServiceConfig) context.Co
 		con, err := net.Listen("tcp", rpcPort)
 		if err != nil {
 			log.Printf("Starting gRPC user service listen  error on %s...\n", con.Addr().String())
+			fmt.Printf("Starting gRPC user service listen  error on %s...\n", con.Addr().String())
 			panic(err)
 		}
 
 		go func() {
 			log.Printf("Starting gRPC user service on %s...\n", con.Addr().String())
+			fmt.Printf("Starting gRPC user service on %s...\n", con.Addr().String())
 			err = config.GrpcServer.Serve(con)
 			if err != nil {
 				log.Printf("Starting gRPC user service serve error on %s...\n", con.Addr().String())
+				fmt.Printf("Starting gRPC user service serve error on %s...\n", con.Addr().String())
 				panic(err)
 			}
 			cancel()

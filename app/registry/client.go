@@ -18,12 +18,13 @@ type providers struct {
 	mutex    *sync.RWMutex
 }
 
-var prov = providers{
+var srvprividers = providers{
 	services: make(map[ServiceName][]string),
 	mutex:    new(sync.RWMutex),
 }
 
 func (p *providers) Update(pat patch) {
+	fmt.Printf("srvprividers Update %v\n", pat)
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 	for _, patchEntry := range pat.Added {
@@ -53,7 +54,8 @@ func (p providers) get(name ServiceName) (string, error) {
 }
 
 func GetProvider(name ServiceName) (string, error) {
-	return prov.get(name)
+	fmt.Printf("GetProvider %v %v\n", name, srvprividers)
+	return srvprividers.get(name)
 }
 
 func RegisterService(r ServiceConfig) error {
@@ -149,5 +151,5 @@ func (suh serviceUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	prov.Update(p)
+	srvprividers.Update(p)
 }

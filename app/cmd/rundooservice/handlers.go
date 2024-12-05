@@ -17,6 +17,7 @@ func (app *application) getCreateProductsHandler(w http.ResponseWriter, r *http.
 	if r.Method == http.MethodGet {
 		products, err := app.models.Products.GetAll()
 		if err != nil {
+			fmt.Printf("failed to get products: %v\n", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -24,6 +25,8 @@ func (app *application) getCreateProductsHandler(w http.ResponseWriter, r *http.
 
 		data, err := app.handler.ToJSON(products)
 		if err != nil {
+			fmt.Printf("failed ToJSON: %v\n", err)
+			
 			w.WriteHeader(http.StatusInternalServerError)
 			log.Println(err)
 			return
@@ -41,6 +44,8 @@ func (app *application) getCreateProductsHandler(w http.ResponseWriter, r *http.
 
 		err := app.handler.ReadJSON(w, r, &input)
 		if err != nil {
+			fmt.Printf("failed ReadJSON: %v\n", err)
+			
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -53,6 +58,7 @@ func (app *application) getCreateProductsHandler(w http.ResponseWriter, r *http.
 
 		err = app.models.Products.Insert(product)
 		if err != nil {
+			fmt.Printf("failed Products Insert: %v\n", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -63,6 +69,7 @@ func (app *application) getCreateProductsHandler(w http.ResponseWriter, r *http.
 		// Write the JSON response with a 201 Created status code and the Location header set.
 		err = app.handler.WriteJSON(w, http.StatusCreated, rundoo.Envelope{"product": product}, headers)
 		if err != nil {
+			fmt.Printf("failed Products WriteJSON: %v\n", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
