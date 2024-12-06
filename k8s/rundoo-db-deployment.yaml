@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rundook-db
+spec:
+  selector:
+    matchLabels:
+      app: rundook-db
+  template:
+    metadata:
+      labels:
+        app: rundook-db
+    spec:
+      containers:
+        - name: api
+          image: gators/rundoo-db
+          env:
+            - name: POSTGRES_PASSWORD
+              value: uber
+

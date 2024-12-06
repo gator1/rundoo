@@ -2,11 +2,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: rundoo-api
-  namespace: rundook
 spec:
   ports:
-    - port: 80
-      targetPort: 80
+    - port: 6000
+      targetPort: 6000
   selector:
     app: rundoo-api
   type: ClusterIP
@@ -15,9 +14,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: rundoo-api
-  namespace: rundook
 spec:
-  replicas: 2
   selector:
     matchLabels:
       app: rundoo-api
@@ -29,17 +26,4 @@ spec:
       containers:
         - name: api
           image: gators/rundoo-api
-          volumeMounts:
-            - name: app-properties
-              mountPath: "/app/config"
-              readOnly: true
-            - name: db-properties
-              mountPath: "/app/config/db"
-              readOnly: true
-      volumes:
-        - name: app-properties
-          configMap:
-            name: rundoo-api-properties
-        - name: db-properties
-          secret:
-            secretName: rundoo-api
+          

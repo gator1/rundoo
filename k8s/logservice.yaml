@@ -2,11 +2,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: logservice
-  namespace: rundook
 spec:
   ports:
-    - port: 8080
-      targetPort: 8080
+    - port: 4000
+      targetPort: 4000
   selector:
     app: logservice
   type: ClusterIP
@@ -14,10 +13,8 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: logservice
-  namespace: rundook
+  name: logservice 
 spec:
-  replicas: 2
   selector:
     matchLabels:
       app: logservice
@@ -29,6 +26,4 @@ spec:
       containers:
         - name: api
           image: gators/rundoo-log
-          envFrom:
-            - secretRef:
-                name: logservice-connection
+          

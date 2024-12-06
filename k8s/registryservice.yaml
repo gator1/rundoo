@@ -2,11 +2,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: registryservice
-  namespace: rundook
 spec:
   ports:
-    - port: 8080
-      targetPort: 8080
+    - port: 3000
+      targetPort: 3000
   selector:
     app: registryservice
   type: ClusterIP
@@ -15,9 +14,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: registryservice
-  namespace: rundook
 spec:
-  replicas: 2
   selector:
     matchLabels:
       app: registryservice
@@ -29,6 +26,4 @@ spec:
       containers:
         - name: api
           image: gators/rundoo-registry
-          envFrom:
-            - secretRef:
-                name: registryservice-connection
+          
