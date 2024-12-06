@@ -1,33 +1,33 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: products-db
-  namespace: wb-test-2
+  name: rundook-db
+  namespace: rundook
 spec:
   ports:
     - port: 5432
       targetPort: 5432
   selector:
-    app: products-db
+    app: rundook-db
   type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: products-db
-  namespace: wb-test-2
+  name: rundook-db
+  namespace: rundook
 spec:
   selector:
     matchLabels:
-      app: products-db
+      app: rundook-db
   template:
     metadata:
       labels:
-        app: products-db
+        app: rundook-db
     spec:
       containers:
         - name: db
-          image: psdockerrun/products-db
+          image: gators/rundoo-db
           env:
             - name: POSTGRES_PASSWORD_FILE
               value: /secrets/pg-password
@@ -38,4 +38,4 @@ spec:
       volumes:
         - name: db-password
           secret:
-            secretName: products-db-password
+            secretName: rundook-db-password

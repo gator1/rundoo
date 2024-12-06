@@ -25,4 +25,4 @@ spec:
     spec:
       containers:
         - name: api
-          image: psdockerrun/products-api
+          image: gators/products-api

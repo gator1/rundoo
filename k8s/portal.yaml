@@ -2,11 +2,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: web
-  namespace: wb-test-2
+  namespace: rundook
 spec:
   ports:
     - port: 8082
-      targetPort: 80
+      targetPort: 5050
   selector:
     app: web
   type: LoadBalancer
@@ -15,7 +15,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: web
-  namespace: wb-test-2
+  namespace: rundook
 spec:
   replicas: 3
   selector:
@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: psdockerrun/web
+          image: gators/rundoo-web
           env:
             - name: Environment
               value: TEST
