@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: stock-api
+  namespace: wb-prod
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: stock-api
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stock-api
+  namespace: wb-prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: stock-api
+  template:
+    metadata:
+      labels:
+        app: stock-api
+    spec:
+      containers:
+        - name: api
+          image: psdockerrun/stock-api
+          envFrom:
+            - secretRef:
+                name: stock-api-connection
+          resources:
+            requests:
+              cpu: 250m
+              memory: 125Mi
+            limits:
+              cpu: 500m
+              memory: 250Mi  

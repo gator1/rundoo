@@ -1,0 +1,63 @@
+version: '3.7'
+
+services:
+
+  products-db:
+    image: psdockerrun/products-db
+    build:
+      context: db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=wired
+    networks:
+      - wb-net
+
+  products-api:
+    image: psdockerrun/products-api
+    build:
+      context: products-api
+    ports:
+      - "8081:80"
+    networks:
+      - wb-net
+    depends_on:
+      - products-db
+
+  stock-api:
+    image: psdockerrun/stock-api
+    build:
+      context: stock-api
+    ports:
+      - "8082:8080"
+    networks:
+      - wb-net
+    depends_on:
+      - products-db
+  
+  web:
+    image: psdockerrun/web
+    build:
+      context: web
+    ports:
+      - "8080:80"
+    networks:
+      - wb-net
+    depends_on:
+      - products-api      
+      - stock-api
+  
+  web-v2:
+    image: psdockerrun/web:v2
+    build:
+      context: web
+      dockerfile: Dockerfile.v2
+  
+  web-v3:
+    image: psdockerrun/web:v3
+    build:
+      context: web
+      dockerfile: Dockerfile.v3
+
+networks:
+  wb-net:

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: products-api-properties
+  namespace: wb-test
+data:
+  application.properties: |-
+    logging.level.wiredbrain.products=DEBUG
+    management.endpoints.web.exposure.include=prometheus
+    server.port=80
+    spring.jpa.show-sql=true
+    spring.jpa.generate-ddl=true
+    spring.jpa.hibernate.ddl-auto=update

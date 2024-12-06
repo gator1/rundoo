@@ -1,0 +1,3 @@
+FROM psdockerrun/web
+
+COPY v2/site.css /app/wwwroot/css/

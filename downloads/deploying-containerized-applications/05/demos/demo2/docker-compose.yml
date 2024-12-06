@@ -1,0 +1,36 @@
+version: '3.9'
+
+services:
+
+  products-api:
+    image: psdockerrun/products-api
+    secrets:
+      - source: products-api-config
+        target: /app/config/application.properties
+
+  stock-api:
+    image: psdockerrun/stock-api
+    env_file:
+      - ./secrets/stock-api.env
+
+  web:
+    image: psdockerrun/web
+    ports:
+      - "80:80"
+    environment:
+      Environment: ''
+      Logging__LogLevel__Default: 'Warning'
+      Logging__LogLevel__WiredBrain: 'Information'
+    secrets:
+      - source: web-api
+        target: /app/secrets/api.json
+    depends_on:
+      - products-api
+      - stock-api
+
+secrets:
+  products-api-config:
+    file: ./secrets/application.properties
+
+  web-api:
+    file: ./secrets/api.json

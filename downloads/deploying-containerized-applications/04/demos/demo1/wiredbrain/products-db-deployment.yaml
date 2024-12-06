@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products-db
+spec:
+  selector:
+    matchLabels:
+      app: products-db
+  template:
+    metadata:
+      labels:
+        app: products-db
+    spec:
+      containers:
+        - name: api
+          image: gators/rundoo-db
+          env:
+            - name: POSTGRES_PASSWORD
+              value: wired

@@ -1,0 +1,58 @@
+services:
+
+  products-db-test:
+    image: psdockerrun/products-db
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_PASSWORD=wiredtest
+    restart: always
+    mem_limit: 500M
+    networks:
+      - wb-net
+
+  products-api-test:
+    image: psdockerrun/products-api
+    ports:
+      - "8011:80"
+    volumes:
+      - ./config/products-api:/app/config
+    restart: always
+    mem_limit: 500M
+    networks:
+      - wb-net
+    depends_on:
+      - products-db-test
+
+  stock-api-test:
+    image: psdockerrun/stock-api
+    ports:
+      - "8080"
+    environment:
+      - POSTGRES_CONNECTION_STRING=host=products-db-test port=5432 user=postgres password=wiredtest dbname=postgres sslmode=disable
+    restart: always
+    mem_limit: 125M
+    networks:
+      - wb-net
+    depends_on:
+      - products-db-test
+  
+  web-test:
+    image: psdockerrun/web
+    ports:
+      - "8010:80"
+    environment:
+      - Environment=TEST
+    volumes:
+      - ./config/web/config:/app/config
+      - ./config/web/secrets:/app/secrets
+    restart: always
+    mem_limit: 250M
+    networks:
+      - wb-net
+    depends_on:
+      - products-api-test
+      - stock-api-test
+
+networks:
+  wb-net:

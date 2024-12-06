@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: products-api
+  namespace: wb-test
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: products-api
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products-api
+  namespace: wb-test
+spec:
+  selector:
+    matchLabels:
+      app: products-api
+  template:
+    metadata:
+      labels:
+        app: products-api
+    spec:
+      containers:
+        - name: api
+          image: psdockerrun/products-api
+          volumeMounts:
+            - name: app-properties
+              mountPath: "/app/config"
+              readOnly: true
+            - name: db-properties
+              mountPath: "/app/config/db"
+              readOnly: true
+      volumes:
+        - name: app-properties
+          configMap:
+            name: products-api-properties
+        - name: db-properties
+          secret:
+            secretName: products-api-db

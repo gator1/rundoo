@@ -1,0 +1,80 @@
+version: "3.7"
+
+services:
+  products-db:
+    image: psdockerrun/products-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD_FILE=/secrets/pg-password
+    secrets:
+      - source: products-db-password
+        target: /secrets/pg-password
+        mode: 0400
+    networks:
+      - wb-net
+
+  products-api:
+    image: psdockerrun/products-api
+    ports:
+      - "8081:80"
+    configs:
+      - source: products-api-config
+        target: /app/config/application.properties
+    secrets:
+      - source: products-api-dbconfig
+        target: /app/config/db/application.properties
+    networks:
+      - wb-net
+    deploy:
+      replicas: 2
+
+  stock-api:
+    image: psdockerrun/stock-api
+    ports:
+      - "8082:8080"
+    environment:
+      - POSTGRES_CONNECTION_STRING=host=products-db port=5432 user=postgres password=wiredtest2 dbname=postgres sslmode=disable
+    networks:
+      - wb-net
+    deploy:
+      replicas: 2
+
+  web:
+    image: psdockerrun/web:v2
+    ports:
+      - "8080:80"
+    environment:
+      - Environment=TEST
+      - Debug:ShowHost=true
+    configs:
+      - source: web-logging
+        target: /app/config/logging.json
+    secrets:
+      - source: web-api
+        target: /app/secrets/api.json
+    networks:
+      - wb-net
+    deploy:
+      replicas: 3
+
+networks:
+  wb-net:
+    name: wb-net-test
+
+configs:
+  products-api-config:
+    external: true
+
+  web-logging:
+    external: true
+
+secrets:
+  products-db-password:
+    external: true
+
+  products-api-dbconfig:
+    external: true
+
+  web-api:
+    external: true

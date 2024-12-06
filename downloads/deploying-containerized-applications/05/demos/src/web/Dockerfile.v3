@@ -1,0 +1,4 @@
+FROM psdockerrun/web
+
+ENTRYPOINT ["sh"]
+CMD ["ls", "/app/secrets"]

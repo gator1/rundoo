@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+
+  products-api:
+    image: psdockerrun/products-api
+    secrets:
+      - source: products-api-config
+        target: application.properties
+    networks:
+      - wb-net
+
+  stock-api:
+    image: psdockerrun/stock-api
+    environment:
+      - POSTGRES_CONNECTION_STRING=host=[YOUR-DATABASE].us-east-2.rds.amazonaws.com port=5432 dbname=wb_prod user=postgres password=[YOUR-PASSWORD] sslmode=require
+    networks:
+      - wb-net
+
+  web:
+    image: psdockerrun/web
+    ports:
+      - "80:80"
+    environment:
+      Environment: ''
+      Logging__LogLevel__Default: 'Warning'
+      Logging__LogLevel__WiredBrain: 'Information'
+    secrets:
+      - source: web-api
+        target: api.json
+    depends_on:
+      - products-api
+      - stock-api
+    networks:
+      - wb-net
+
+networks:
+  wb-net:
+
+secrets:
+  products-api-config:
+    external: true
+    name: arn:aws:secretsmanager:etc
+
+  web-api:
+    external: true
+    name: arn:aws:secretsmanager:etc

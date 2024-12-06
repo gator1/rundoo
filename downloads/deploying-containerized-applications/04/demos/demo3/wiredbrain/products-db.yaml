@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: products-db
+  namespace: wb-test-2
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: products-db
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products-db
+  namespace: wb-test-2
+spec:
+  selector:
+    matchLabels:
+      app: products-db
+  template:
+    metadata:
+      labels:
+        app: products-db
+    spec:
+      containers:
+        - name: db
+          image: psdockerrun/products-db
+          env:
+            - name: POSTGRES_PASSWORD_FILE
+              value: /secrets/pg-password
+          volumeMounts:
+            - name: db-password
+              mountPath: "/secrets"
+              readOnly: true
+      volumes:
+        - name: db-password
+          secret:
+            secretName: products-db-password
