@@ -23,6 +23,12 @@ spec:
       labels:
         app: web
     spec:
+      initContainers:
+        - name: wait-for-api
+          image: busybox
+          command: ['sh', '-c', 'until nc -zv rundoo-api 6000; do echo waiting for api; sleep 2; done']
       containers:
-        - name: api
-          image: gators/web
+        - name: web
+          image: gators/rundoo-web
+          ports:
+            - containerPort: 5050

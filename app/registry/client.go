@@ -157,7 +157,7 @@ func RegisterServiceMux(r ServiceConfig) error {
 		return fmt.Errorf("failed to Post ServicesURL %s  %w", ServicesURL, err)
 	}
 	if res.StatusCode != http.StatusOK {
-		log.Printf("RegisterServiceMux failed to register service ServicesURL %s %v \n", ServicesURL, err)
+		log.Printf("RegisterServiceMux failed to register service ServicesURL %s %v \n", ServicesURL, res.StatusCode)
 		return fmt.Errorf("failed to register service, ServicesURL %s. Registry service responded with code %v", ServicesURL, res.StatusCode)
 	}
 	log.Printf("RegisterServiceMux succeeds service ServicesURL %s %v \n", ServicesURL, r)

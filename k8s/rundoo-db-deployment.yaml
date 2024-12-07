@@ -1,20 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rundook-db
+  name: rundoo-db
 spec:
   selector:
     matchLabels:
-      app: rundook-db
+      app: rundoo-db
   template:
     metadata:
       labels:
-        app: rundook-db
+        app: rundoo-db
     spec:
       containers:
-        - name: api
+        - name: rundoo-db-deployment
           image: gators/rundoo-db
           env:
             - name: POSTGRES_PASSWORD
               value: uber
-
+          ports:
+            - containerPort: 5432
+          

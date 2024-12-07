@@ -188,7 +188,7 @@ func (s RegistryService) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		err = regi.add(r)
 		if err != nil {
 			log.Println("server ServeHTTP add error", err)
-			w.WriteHeader(http.StatusBadRequest)
+			// w.WriteHeader(http.StatusBadRequest)  this could fail in kubenetes since the other server is not fully up yet
 			return
 
 		}
@@ -198,7 +198,7 @@ func (s RegistryService) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		 // Get the service configuration
 		 service, exists := regi.get(string(serviceName))
 		 if !exists {
-			fmt.Println("Service not found", serviceName)
+			log.Println("Service not found", serviceName)
 			http.Error(w, "Service not found", http.StatusNotFound)
 			return
 		 }
@@ -206,7 +206,7 @@ func (s RegistryService) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		 // Encode the service configuration as JSON and write it to the response
 		 w.Header().Set("Content-Type", "application/json")
 		 if err := json.NewEncoder(w).Encode(service); err != nil {
-			fmt.Println("Failed to encode service", err)
+			log.Println("Failed to encode service", err)
 			http.Error(w, "Failed to encode service", http.StatusInternalServerError)
 		 }
 

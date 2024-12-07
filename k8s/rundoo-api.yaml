@@ -23,7 +23,11 @@ spec:
       labels:
         app: rundoo-api
     spec:
-      containers:
-        - name: api
-          image: gators/rundoo-api
+      initContainers:
+          - name: wait-for-db
+            image: busybox
+            command: ['sh', '-c', 'until nc -zv logservice 4000; do echo waiting for logservice; sleep 2; done']
+      containers:     
+          - name: rundoo-api
+            image: gators/rundoo-api
           
