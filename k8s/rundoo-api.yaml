@@ -3,11 +3,15 @@ kind: Service
 metadata:
   name: rundoo-api
 spec:
-  ports:
-    - port: 6000
-      targetPort: 6000
   selector:
     app: rundoo-api
+  ports:
+    - name: tcp
+      port: 6000
+      targetPort: 6000
+    - name: grpc
+      port: 6001
+      targetPort: 6001
   type: ClusterIP
 ---
 apiVersion: apps/v1
@@ -24,10 +28,12 @@ spec:
         app: rundoo-api
     spec:
       initContainers:
-          - name: wait-for-db
-            image: busybox
-            command: ['sh', '-c', 'until nc -zv logservice 4000; do echo waiting for logservice; sleep 2; done']
-      containers:     
-          - name: rundoo-api
-            image: gators/rundoo-api
-          
+        - name: wait-for-db
+          image: busybox
+          command: ['sh', '-c', 'until nc -zv logservice 4000; do echo waiting for logservice; sleep 2; done']
+      containers:
+        - name: rundoo-api
+          image: gators/rundoo-api
+          ports:
+            - containerPort: 6000
+            - containerPort: 6001

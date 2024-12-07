@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"strings"	
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -14,7 +14,6 @@ import (
 )
 
 type SKU string
-
 
 type CategoryType string
 
@@ -27,14 +26,13 @@ const (
 type Product struct {
 	ID        int64     `json:"id"`
 	CreatedAt time.Time `json:"-"`
-	Name     string
-	Category CategoryType
-	Sku      SKU
-	Version   int32     `json:"-"`
+	Name      string
+	Category  CategoryType
+	Sku       SKU
+	Version   int32 `json:"-"`
 }
 
 type Products []Product
-
 
 type ProductModel struct {
 	DB *sql.DB
@@ -52,7 +50,6 @@ func NewSKU(s string) (SKU, error) {
 	}
 	return SKU(s), nil
 }
-
 
 func (b ProductModel) Insert(product *Product) error {
 	query := `
@@ -186,7 +183,7 @@ func (b ProductModel) SearchProducts(filters []rundoogrpc.Filter) ([]*Product, e
 	WHERE name ILIKE $1 OR category ILIKE $1 OR sku ILIKE $1
 `
 
-    // Define the search parameters
+	// Define the search parameters
 	searchString := "%search_string%"
 	includeName := false
 	includeCategory := false
@@ -215,7 +212,6 @@ func (b ProductModel) SearchProducts(filters []rundoogrpc.Filter) ([]*Product, e
 
 	}
 
-	
 	// Construct the search query dynamically
 	queryBuilder := strings.Builder{}
 	queryBuilder.WriteString("SELECT * FROM Products WHERE ")
@@ -248,7 +244,6 @@ func (b ProductModel) SearchProducts(filters []rundoogrpc.Filter) ([]*Product, e
 	}
 
 	query = queryBuilder.String()
-
 
 	// Perform the search query
 	rows, err := b.DB.Query(query, params...)
@@ -286,7 +281,6 @@ func (b ProductModel) SearchProducts(filters []rundoogrpc.Filter) ([]*Product, e
 	return products, nil
 }
 
-
 func (p Product) MatchFilters(filters []rundoogrpc.Filter) bool {
 	// Apply the filters to the product and determine if it matches
 	// Return true if the product matches all filters, false otherwise
@@ -305,7 +299,6 @@ func (p Products) toProto() []*rundoogrpc.Product {
 	}
 	return protoProducts
 }
-
 
 func (p Products) GetByName(name string) (*Product, error) {
 	for i := range p {

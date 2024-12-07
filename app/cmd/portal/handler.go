@@ -13,6 +13,8 @@ import (
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
+	fmt.Println("portal home starts")
+            
 	products, err := app.productlist.GetAll()
 
 	if err != nil {

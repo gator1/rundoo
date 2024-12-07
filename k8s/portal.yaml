@@ -1,34 +1,46 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: web
+  name: portal-loadbalancer
 spec:
+  selector:
+    app: portal
   ports:
     - port: 8082
       targetPort: 5050
-  selector:
-    app: web
   type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: portal
+spec:
+  selector:
+    app: portal
+  ports:
+    - port: 5050
+      targetPort: 5050
+  type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: web
+  name: portal
 spec:
   selector:
     matchLabels:
-      app: web
+      app: portal
   template:
     metadata:
       labels:
-        app: web
+        app: portal
     spec:
       initContainers:
         - name: wait-for-api
           image: busybox
           command: ['sh', '-c', 'until nc -zv rundoo-api 6000; do echo waiting for api; sleep 2; done']
       containers:
-        - name: web
+        - name: portal
           image: gators/rundoo-web
           ports:
             - containerPort: 5050

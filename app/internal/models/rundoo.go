@@ -51,7 +51,7 @@ func (m *RundooModel) GetAll() (products []data.Product, err error) {
 	response, err := client.GetProducts(context.Background(), &rundoogrpc.GetProductsRequest{})
 	if err != nil {
 		fmt.Printf("failed to get products: %v\n", err)
-		log.Fatalf("failed to get products: %v", err)
+		log.Printf("failed to get products: %v", err)
 		return nil, err
 	}
 
@@ -64,6 +64,7 @@ func (m *RundooModel) GetAll() (products []data.Product, err error) {
 		}
 		products = append(products, dataproduct)
 	}
+	fmt.Printf("Get products: %v", products)
 	return 
 }
 
