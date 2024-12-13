@@ -16,11 +16,26 @@ Rundoo is a distributed system developed in Go. The codebase does not rely on Ja
 
 The communication between the web portal and rundoo service is done through gRPC, while the other services communicate using REST APIs over HTTP. Initially, the plan was to use UberFx and gRPC for all communication, but due to closed-source modules in UberFx, the development time would have been significantly longer. Nevertheless, this project showcases expertise in a distributed system environment using pure Go.
 
+### Containerized
+  Thge app has been containerized. It works with Docker compose and Kubunetes. 
+
 ## UI Overview
 
 The web portal is accessible at `localhost:5050` and provides functionality to view, add, and search products. When the database is initially empty, you can use the provided SQL files to populate it. The portal consists of three buttons: "Home," "Add Product," and "Search Product." The "Home" button allows you to view the products in the database, while the "Add Product" and "Search Product" buttons enable you to add new products or search for existing ones. Please note that the current implementation lacks pagination, making it suitable for demo environments rather than large-scale production use.
 
-## Database Setup
+## Kubenetes set up 
+  Go to the root directory ie ~/rundoo and do kubectl apply -f ./k8s
+    To remove the app, do kubectl delete ./k8s. Tested on Docker's Desktop built 
+    Kubentes. You have to eanble it from Docker Desktop. 
+
+## Docker Compose set up
+    Go to the docker directory ie ~/rundoo/docker, run docker compose up -d
+    to shutdown, run docker compose down. 
+
+## Local machine setup, use four terminals
+ The databse is only needed for local run. Both docker compose and Kubenetes set up data for you. 
+   
+### Database Setup
 
 The rundoo service utilizes a PostgreSQL database, which can be set up using the following steps:
 
