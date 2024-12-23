@@ -2,7 +2,7 @@ services:
   jenkins:
     image: gators/jenkins # :latest (weekly), :lts, :jdk17, :jdk11, :lts-jdk17, etc
     ports:
-      - "127.0.0.1:8080:8080" # drop 127.0.0.1: if you want remote access to Jenkins
+      - "127.0.0.1:8060:8080" # drop 127.0.0.1: if you want remote access to Jenkins
     volumes:
       - jenkins_home:/var/jenkins_home # persist data across container recreation, updating image, etc
       - /var/run/docker.sock:/var/run/docker.sock # Mount Docker socket
