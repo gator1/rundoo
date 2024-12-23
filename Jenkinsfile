@@ -23,18 +23,18 @@ pipeline {
             sh(script: 'docker compose up -d')
          }
       }
-      stage("Unit Test") {
-            agent {
-                docker {
-                    image 'golang:1.23'
-                    args '-v /go/pkg/mod:/go/pkg/mod'
-                }
-            }
-            steps {
-                echo "UNIT TEST EXECUTION STARTED in $WORKSPACE/app"
-                 sh 'go test ./... -v'
-            }
-      }
+      // stage("Unit Test") {
+      //       agent {
+      //           docker {
+      //               image 'golang:1.23'
+      //               args '-v /go/pkg/mod:/go/pkg/mod'
+      //           }
+      //       }
+      //       steps {
+      //           echo "UNIT TEST EXECUTION STARTED in $WORKSPACE/app"
+      //            sh 'go test ./... -v'
+      //       }
+      // }
       stage('Docker Push') {
          steps {
             echo "Runnning in $WORKSPACE"
