@@ -1,13 +1,11 @@
 pipeline {
    agent any
-   tools {
-        go 'go1.23'
-    }
-    environment {
-        CGO_ENABLED = 0 
-        GOPATH = "${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_ID}"
-        DOCKER_HOST = 'unix:///var/run/docker.sock'
-    }
+   
+   environment {
+      CGO_ENABLED = 0 
+      GOPATH = "${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_ID}"
+      DOCKER_HOST = 'unix:///var/run/docker.sock'
+   }
 
    stages {
       stage('Verify Branch') {
@@ -26,6 +24,12 @@ pipeline {
          }
       }
       stage("Unit Test") {
+            agent {
+                docker {
+                    image 'golang:1.23'
+                    args '-v /go/pkg/mod:/go/pkg/mod'
+                }
+            }
             steps {
                 echo "UNIT TEST EXECUTION STARTED in $WORKSPACE/app"
                  sh 'go test ./... -v'
