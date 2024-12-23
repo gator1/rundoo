@@ -1,9 +1,13 @@
 pipeline {
    agent any
-   
-   environment {
-      DOCKER_HOST = 'unix:///var/run/docker.sock'
-   }
+   tools {
+        go 'go1.23'
+    }
+    environment {
+        CGO_ENABLED = 0 
+        GOPATH = "${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_ID}"
+        DOCKER_HOST = 'unix:///var/run/docker.sock'
+    }
 
    stages {
       stage('Verify Branch') {
@@ -21,18 +25,11 @@ pipeline {
             sh(script: 'docker compose up -d')
          }
       }
-      stage('Run Tests') {
-         steps {
-            sh(script: 'pytest ./tests/test_sample.py')
-         }
-         post {
-            success {
-               echo "Tests passed! :)"
+      stage("Unit Test") {
+            steps {
+                echo "UNIT TEST EXECUTION STARTED in $WORKSPACE/app"
+                 sh 'go test ./... -v'
             }
-            failure {
-               echo "Tests failed :("
-            }
-         }
       }
       stage('Docker Push') {
          steps {
