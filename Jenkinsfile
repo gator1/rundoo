@@ -35,19 +35,19 @@ pipeline {
       //            sh 'go test ./... -v'
       //       }
       // }
-      stage('Docker Push') {
-         steps {
-            echo "Runnning in $WORKSPACE"
-            dir("$WORKSPACE/jenkins") {
-               script {
-                  docker.withRegistry('', 'dockerhub') {
-                     def image = docker.build('gators/jenkins-rundoo:2024')
-                     image.push()
-                  }
-               }
-            }
-         }
-      }
+      // stage('Docker Push') {
+      //    steps {
+      //       echo "Runnning in $WORKSPACE"
+      //       dir("$WORKSPACE/jenkins") {
+      //          script {
+      //             docker.withRegistry('', 'dockerhub') {
+      //                def image = docker.build('gators/jenkins-rundoo:2024')
+      //                image.push()
+      //             }
+      //          }
+      //       }
+      //    }
+      // }
       stage('QA Deploy') {
          environment {
             KUBECONFIG = credentials('qa-kubeconfig')
