@@ -48,6 +48,39 @@ pipeline {
             }
          }
       }
+      stage('QA Deploy') {
+         environment {
+            KUBECONFIG = credentials('qa-kubeconfig')
+         }
+         when {
+            branch 'feature/k8s-deploy'
+         }
+         steps {
+            sh "kubectl apply -f k8s --kubeconfig $KUBECONFIG"
+         }
+      }
+      stage('Approve Deploy to PROD') {
+         when {
+            branch 'feature/k8s-deploy'
+         }
+         options {
+            timeout(time: 1, unit: 'HOURS')
+         }
+         steps {
+            input message: "Deploy to PROD?"
+         }
+      }
+      stage('PROD Deploy') {
+         environment {
+            KUBECONFIG = credentials('prod-kubeconfig')
+         }
+         when {
+            branch 'feature/k8s-deploy'
+         }
+         steps {
+            sh "kubectl apply -f k8s --kubeconfig $KUBECONFIG"
+         }
+      }
    }
    post {
       always {

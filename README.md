@@ -25,7 +25,7 @@ The web portal is accessible at `localhost:5050` and provides functionality to v
 
 ## Kubenetes set up 
   Go to the root directory ie ~/rundoo and do kubectl apply -f ./k8s
-    To remove the app, do kubectl delete ./k8s. Tested on Docker's Desktop built 
+    To remove the app, do kubectl delete -f ./k8s. Tested on Docker's Desktop built 
     Kubentes. You have to eanble it from Docker Desktop. 
 
 ## Docker Compose set up
