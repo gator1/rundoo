@@ -1,0 +1,18 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "logservice_lib",
+    srcs = ["main.go"],
+    importpath = "app/cmd/logservice",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//registry",
+        "//service",
+    ],
+)
+
+go_binary(
+    name = "logservice",
+    embed = [":logservice_lib"],
+    visibility = ["//visibility:public"],
+)

@@ -1,0 +1,14 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "client",
+    srcs = ["client.go"],
+    importpath = "app/api/v1/client",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//api/v1:api",
+        "//internal/data",
+        "//rundoo",
+        "@org_golang_google_grpc//:grpc",
+    ],
+)

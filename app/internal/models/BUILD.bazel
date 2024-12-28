@@ -1,0 +1,14 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "models",
+    srcs = ["rundoo.go"],
+    importpath = "app/internal/models",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//api/v1:api",
+        "//internal/data",
+        "//registry",
+        "@org_golang_google_grpc//:grpc",
+    ],
+)

@@ -1,0 +1,15 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "rundoo",
+    srcs = [
+        "products.go",
+        "server.go",
+    ],
+    importpath = "app/rundoo",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//api/v1:api",
+        "//internal/data",
+    ],
+)

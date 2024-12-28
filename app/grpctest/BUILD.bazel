@@ -1,0 +1,19 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "grpctest_lib",
+    srcs = ["main.go"],
+    importpath = "app/grpctest",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//api/v1:api",
+        "//api/v1/client",
+        "@org_golang_google_grpc//:grpc",
+    ],
+)
+
+go_binary(
+    name = "grpctest",
+    embed = [":grpctest_lib"],
+    visibility = ["//visibility:public"],
+)

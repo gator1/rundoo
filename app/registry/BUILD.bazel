@@ -1,0 +1,13 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "registry",
+    srcs = [
+        "client.go",
+        "registration.go",
+        "server.go",
+    ],
+    importpath = "app/registry",
+    visibility = ["//visibility:public"],
+    deps = ["@org_golang_google_grpc//:grpc"],
+)
