@@ -1,49 +1,26 @@
-# syntax = docker+earthly:latest
+VERSION 0.8
 
-VERSION 0.6
+all-unit-test:
+    BUILD ./app/grpctest/grpc+unit-test
+    BUILD ./app/cmd/portal+unit-test
+    BUILD ./app/cmd/rundooservice+unit-test
 
-deps:
-    FROM golang:1.23.3 
-    WORKDIR /go/src/github.com/gator1/rundoo/app
+all-docker:
+    BUILD ./app/cmd/logservice+docker
+    BUILD ./app/cmd/portal+docker
+    BUILD ./app/cmd/registryservice+docker
+    BUILD ./app/cmd/rundooservice+docker
 
-    COPY app/go.mod app/go.sum ./
-    RUN go mod download
+all-release:
+    BUILD ./app/cmd/logservice+release
+    BUILD ./app/cmd/portal+release
+    BUILD ./app/cmd/registryservice+release
+    BUILD ./app/cmd/rundooservice+release
 
-    COPY app/ .
+dev-up:
+    LOCALLY
+    RUN docker-compose up
 
-    # Install protoc and the Go plugins for protobuf and gRPC
-    RUN apt-get update && apt-get install -y protobuf-compiler
-    RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-    RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-
-build-proto:
-    FROM +deps
-    RUN protoc --go_out=. --go-grpc_out=. api/v1/rundoo.proto
-
-build-logservice:
-    FROM +build-proto
-    RUN go build -o /out/logservice ./cmd/logservice
-
-build-portal:
-    FROM +build-proto
-    RUN go build -o /out/portal ./cmd/portal
-
-build-registryservice:
-    FROM +build-proto
-    RUN go build -o /out/registryservice ./cmd/registryservice
-
-
-build-rundooservice:
-    FROM +build-proto
-    RUN go build -o /out/rundooservice ./cmd/rundooservice
-
-build-api:
-    FROM +build-proto
-    RUN go build -o /out/api ./api/v1
-
-all:
-    FROM +build-logservice
-    FROM +build-portal
-    FROM +build-registryservice
-    FROM +build-rundooservice
-    FROM +build-api
+dev-down:
+    LOCALLY
+    RUN docker-compose down
