@@ -2,7 +2,7 @@ VERSION 0.8
 
 
 FROM golang:1.23.3-alpine
-WORKDIR /rundoodefs
+WORKDIR /rundoo
 
 # setup protoc
 RUN apk add --no-cache protobuf protobuf-dev
@@ -13,10 +13,10 @@ proto-go:
   ENV PATH=$PATH:/root/go/bin
   RUN go mod init proto-go
 
-  COPY ./v1/rundoo.proto /rundoodefs
-  RUN mkdir -p /rundoodefs/go-api
-  RUN protoc --proto_path=/rundoodefs --go_out=/rundoodefs/go-api --go-grpc_out=/rundoodefs/go-api /rundoodefs/rundoo.proto
-  SAVE ARTIFACT ./go-api /rundoo-pb AS LOCAL rundoo-pb
+  RUN mkdir -p /rundoo/app/api/v1
+  COPY ./v1/rundoo.proto /rundoo/app/api/v1
+  RUN protoc --proto_path=/rundoo/app/api/v1 --go_out=/rundoo/app/api/v1 --go-grpc_out=/rundoo/app/api/v1 /rundoo/app/api/v1/rundoo.proto
+  SAVE ARTIFACT ./app/api/v1 /rundoo-pb AS LOCAL rundoo-pb
 
 proto-all:
   BUILD +proto-go
