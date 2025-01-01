@@ -6,7 +6,7 @@ import (
 
     "google.golang.org/grpc"
     rundoogrpc "app/api/v1"
-    rundoogrpcclient "app/api/v1/client"
+    rundoogrpcclient "app/api/client"
 )
 
 func main() {
