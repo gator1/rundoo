@@ -15,9 +15,7 @@ proto-go:
 
   RUN mkdir -p /rundoo/app/api/v1
   COPY ./v1/rundoo.proto /rundoo/app/api/v1
-  # RUN protoc --proto_path=/rundoo/app/api/v1 --go_out=/rundoo/app/api/v1 --go-grpc_out=/rundoo/app/api/v1 /rundoo/app/api/v1/rundoo.proto
-  # SAVE ARTIFACT ./app/api/v1 /rundoo-pb AS LOCAL rundoo-pb
-
+  # COPY ../../ /rundoo/app doesn't seem to work, the same result as the above
   RUN protoc app/api/v1/*.proto \
             --go_out=. \
             --go_opt=paths=source_relative \

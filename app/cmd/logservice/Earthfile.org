@@ -4,19 +4,30 @@ VERSION 0.8
 
 deps:
     FROM golang:1.23.3-alpine
-    WORKDIR /rundoo/app
-    COPY . . 
-    #COPY ./api/+proto-go/* ./api/v1   
-    COPY ./* .
-    # COPY ./api/+proto-go/* ./api/v1   
-    
-
+    WORKDIR /rundoo
+    COPY ../../api/+proto-go/* ./rundooapi/app/api/v1
+    COPY  ../../* app
 
 build-logservice:
     FROM +deps
+    # COPY  ../../* app
+    
 
     RUN go build -o /out/logservice ./cmd/logservice
     SAVE ARTIFACT  /out/logservice  /logservice AS LOCAL build/logservice
+
+
+# build-logservice:
+#     FROM ../../api+proto-go
+#     WORKDIR /go/src/github.com/gator1/rundoo/app
+
+#     COPY ../../go.mod  ./
+#     RUN go mod download
+
+#     COPY ../.. .
+#     RUN go build -o /out/logservice ./cmd/logservice
+#     SAVE ARTIFACT  /out/logservice  /logservice AS LOCAL build/logservice
+
 
 
 build-api:
