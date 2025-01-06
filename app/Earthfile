@@ -17,18 +17,50 @@ build-logservice:
     # RUN go build -o /out/logservice ./cmd/logservice
     # SAVE ARTIFACT  /out/logservice  /logservice AS LOCAL build/logservice
     RUN go build -o logservice ./cmd/logservice
-   
 
-build-api:
-    FROM +proto-go
-    RUN go build -o /out/api ./api/v1
+build-portal:
+    FROM +deps
+
+    RUN go build -o portal ./cmd/portal
+
+build-registryservice:
+    FROM +deps
+
+    RUN go build -o registryservice ./cmd/registryservice
+
+build-rundooservice:
+    FROM +deps
+
+    RUN go build -o rundooservice ./cmd/rundooservice
+
 
 docker-logservice:
     FROM +build-logservice
     ENTRYPOINT ["./logservice"]
     SAVE IMAGE logservice:latest
 
+docker-portal:
+    FROM +build-portal
+    ENTRYPOINT ["./portal"]
+    SAVE IMAGE portal:latest
+
+docker-registryservice:
+    FROM +build-registryservice
+    ENTRYPOINT ["./registryservice"]
+    SAVE IMAGE registryservice:latest
+
+docker-rundooservice:
+    FROM +build-rundooservice
+    ENTRYPOINT ["./rundooservice"]
+    SAVE IMAGE rundooservice:latest
+
 all:
-    FROM +build-logservice  
+    FROM +build-logservice
+    FROM +build-portal
+    FROM +build-registryservice
+    FROM +build-rundooservice   
     FROM +docker-logservice
+    FROM +docker-registryservice
+    FROM +docker-rundooservice
+    FROM +docker-portal
     
