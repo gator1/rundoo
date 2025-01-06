@@ -6,9 +6,8 @@ deps:
     FROM golang:1.23.3-alpine
     WORKDIR /rundoo/app
     COPY . . 
-    #COPY ./api/+proto-go/* ./api/v1   
     COPY ./* .
-    # COPY ./api/+proto-go/* ./api/v1   
+    COPY ./api/+proto-go/* ./api/v1   
     
 
 
@@ -24,7 +23,7 @@ build-api:
     RUN go build -o /out/api ./api/v1
 
 docker-logservice:
-    COPY +build/go-exlogserviceample .
+    COPY +build/logservice .
     ENTRYPOINT ["/rundoo/logservice"]
     SAVE IMAGE logservice:latest
 
