@@ -14,17 +14,18 @@ deps:
 build-logservice:
     FROM +deps
 
-    RUN go build -o /out/logservice ./cmd/logservice
-    SAVE ARTIFACT  /out/logservice  /logservice AS LOCAL build/logservice
-
+    # RUN go build -o /out/logservice ./cmd/logservice
+    # SAVE ARTIFACT  /out/logservice  /logservice AS LOCAL build/logservice
+    RUN go build -o logservice ./cmd/logservice
+   
 
 build-api:
     FROM +proto-go
     RUN go build -o /out/api ./api/v1
 
 docker-logservice:
-    COPY +build/logservice .
-    ENTRYPOINT ["/rundoo/logservice"]
+    FROM +build-logservice
+    ENTRYPOINT ["./logservice"]
     SAVE IMAGE logservice:latest
 
 all:
