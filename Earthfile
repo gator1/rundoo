@@ -6,21 +6,21 @@ all-unit-test:
     BUILD ./app/cmd/rundooservice+unit-test
 
 all-docker:
-    BUILD ./app/cmd/logservice+docker
-    BUILD ./app/cmd/portal+docker
-    BUILD ./app/cmd/registryservice+docker
-    BUILD ./app/cmd/rundooservice+docker
+    BUILD ./app/+docker-logservice
+    BUILD ./app/+docker-portal
+    BUILD ./app/+docker-registryservice
+    BUILD ./app/+docker-rundooservice
 
 all-release:
-    BUILD ./app/cmd/logservice+release
-    BUILD ./app/cmd/portal+release
-    BUILD ./app/cmd/registryservice+release
-    BUILD ./app/cmd/rundooservice+release
+    BUILD ./app/+build-logservice
+    BUILD ./app/+build-portal
+    BUILD ./app/+build-registryservice
+    BUILD ./app/+build-rundooservice
 
 dev-up:
     LOCALLY
-    RUN docker-compose up
+    RUN docker compose up
 
 dev-down:
     LOCALLY
-    RUN docker-compose down
+    RUN docker compose down
